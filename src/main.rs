@@ -1,5 +1,5 @@
-use iced::{Length,Color,Settings};
-use iced::pure::{Sandbox,Element,text,column,row};
+use iced::{Length,Settings,Color};
+use iced::pure::{Sandbox,Element,column,row};
 
 mod menu;
 mod browser;
@@ -8,24 +8,22 @@ mod theme;
 
 use browser::{Browser,BrowserEvent};
 use menu::{Menu,MenuEvent};
-use preview::{NordifiedImage,OriginalImage,ImageView};
+use preview::Previews;
 
 fn main() {
     NordifyGUI::run(Settings::default())
-        .unwrap()
+        .expect("Failed to run Nordify GUI")
 }
 
 #[derive(Default)]
 struct NordifyGUI {
-    original: OriginalImage,
-    nordified: NordifiedImage,
+    previews: Previews,
     browser: Browser,
     menu: Menu,
 }
 
 #[derive(Clone, Debug)]
-enum Event {
-    ShowPreview,
+pub enum Event {
     Browser(BrowserEvent),
     Menu(MenuEvent),
 }
@@ -43,8 +41,8 @@ impl Sandbox for NordifyGUI {
 
     fn update(&mut self, message: Self::Message) {
         match message {
-            Event::Browser(event) => self.browser.update(event),
-            _ => (),
+            Event::Browser(event) => self.browser.update(&mut self.previews, &mut self.menu, event),
+            Event::Menu(event) => self.menu.update(&mut self.previews, &mut self.browser, event),
         }
     }
 
@@ -52,15 +50,7 @@ impl Sandbox for NordifyGUI {
         let spacing = 6;
         column()
             .push(
-                row()
-                    .push(
-                        self.original.view()
-                    )
-                    .push(
-                        self.nordified.view()
-                    )
-                    .spacing(spacing)
-                    .height(Length::FillPortion(50))
+                self.previews.view()
             )
             .push(
                 row()
@@ -68,9 +58,7 @@ impl Sandbox for NordifyGUI {
                         self.browser.view()
                     )
                     .push(
-                        text("Controls")
-                            .width(Length::FillPortion(25))
-                            .height(Length::FillPortion(50))
+                        self.menu.view()
                     )
                     .spacing(spacing)
                     .height(Length::FillPortion(50))
@@ -80,9 +68,7 @@ impl Sandbox for NordifyGUI {
             .into()
     }
 
-    fn background_color(&self) -> iced::Color {
-        Color { r: 0.533, g: 0.752, b: 0.815, a: 1. }
+    fn background_color(&self) -> Color {
+        theme::BLUE
     }
-
 }
-

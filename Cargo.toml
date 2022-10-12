@@ -6,6 +6,13 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-iced = { version = "0.4.2", features = ["debug", "image", "pure"] }
-iced_aw = "0.2.0"
+dirs = "4.0.0"
+fastrand = "1.8.0"
+iced = { version = "0.4.2", features = ["debug", "image", "pure", "svg"] }
+iced_aw = { version = "0.2.0", features = ["floating_element"] }
 nordify = { path = "../nordify" }
+whatsinaname = { path = "../whatsinaname" }
+tempfile = "3.3.0"
+
+[profile.release]
+strip = true
