@@ -93,7 +93,7 @@ impl Previews {
                 .push(
                     container(
                         text("ORIGINAL")
-                            .color(Color { r: 0.847, g: 0.870, b: 0.913, a: 0.4 }))
+                            .color(Color { r: 0.847, g: 0.870, b: 0.913, a: 0.65 }))
                         .align_x(iced::alignment::Horizontal::Left)
                         .center_y()
                         .width(Length::FillPortion(1))
@@ -104,7 +104,7 @@ impl Previews {
                 .push(
                     container(
                         text("NORDIFIED")
-                            .color(Color { r: 0.847, g: 0.870, b: 0.913, a: 0.4 })
+                            .color(Color { r: 0.847, g: 0.870, b: 0.913, a: 0.65 })
                     )
                         .align_x(iced::alignment::Horizontal::Right)
                         .center_y()

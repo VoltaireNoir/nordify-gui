@@ -7,7 +7,7 @@ pub const LL_GREY: Color = Color { r: 0.262, g: 0.298, b: 0.368, a: 1. };
 pub const GREY: Color = Color { r: 0.298, g: 0.337, b: 0.415, a: 1. };
 pub const WHITE: Color = Color { r: 0.925, g: 0.937, b: 0.956, a: 1. };
 pub const L_WHITE: Color = Color { r: 0.898, g: 0.913, b: 0.941, a: 1. };
-//pub const LL_WHITE: Color = Color { r: 0.847, g: 0.870, b: 0.913, a: 1. };
+pub const LL_WHITE: Color = Color { r: 0.847, g: 0.870, b: 0.913, a: 1. };
 pub const BLUE: Color = Color { r: 0.533, g: 0.752, b: 0.815, a: 1. };
 pub const RED: Color = Color { r: 0.749, g: 0.380, b: 0.415, a: 1. };
 pub const GREEN: Color = Color { r: 0.639, g: 0.745, b: 0.549, a: 1. };
@@ -19,7 +19,7 @@ impl container::StyleSheet for PreviewLabelStyle {
     fn style(&self) -> container::Style {
         container::Style{
             background: Some(Background::Color(
-                Color { r: 0.18, g: 0.203, b: 0.250, a: 0.85 }
+                Color { r: 0.18, g: 0.203, b: 0.250, a: 0.70 }
             )),
             ..Default::default()
             }
