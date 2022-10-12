@@ -246,9 +246,7 @@ impl Content {
 
     fn view(&self) -> Element<Event> {
         use ContentType::*;
-        let btcontent = row()
-            .push(text(self.handle.file_name().to_string_lossy()).size(16).width(Length::FillPortion(1)))
-            .spacing(6);
+        let btcontent = text(self.handle.file_name().to_string_lossy()).size(16).width(Length::FillPortion(1));
 
         let icon = {
             let src = match self.ctype {
