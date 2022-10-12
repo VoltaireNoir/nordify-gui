@@ -247,8 +247,8 @@ impl Content {
     fn view(&self) -> Element<Event> {
         use ContentType::*;
         let btcontent = row()
-            .push(text(self.handle.file_name().to_string_lossy()).size(16))
-            .spacing(5);
+            .push(text(self.handle.file_name().to_string_lossy()).size(16).width(Length::FillPortion(1)))
+            .spacing(6);
 
         let icon = {
             let src = match self.ctype {
@@ -256,23 +256,27 @@ impl Content {
                 Image => &IMAGE_ICON_SRC,
                 Generic => &FILE_ICON_SRC,
             };
-            svg::Svg::new(svg::Handle::from_memory(*src))
-                .width(Length::Fill)
-                .content_fit(iced::ContentFit::Contain)
-                .width(Length::FillPortion(4))
-                .height(Length::Units(18))
+            container(
+                svg::Svg::new(svg::Handle::from_memory(*src))
+                    .content_fit(iced::ContentFit::Contain)
+                    .width(Length::Units(22))
+                    .height(Length::Units(20))
+            )
+                .padding(2)
+                .center_x()
+                .center_y()
         };
         let button = match self.ctype {
             Directory | ContentType::Image => button(btcontent)
                 .on_press(Event::Browser(BrowserEvent::ContentClicked(self.id)))
                 .style(theme::ContentButtonStyle::new(self.selected))
-                .width(Length::FillPortion(96)),
+                .width(Length::Fill),
             Generic => button(btcontent)
                 .style(theme::ContentButtonStyle::new(false))
-                .width(Length::FillPortion(96)),
+                .width(Length::Fill),
         };
 
-        container(row().push(icon).push(button).spacing(2))
+        container(row().push(icon).push(button).spacing(6))
             .center_y()
             .into()
     }
