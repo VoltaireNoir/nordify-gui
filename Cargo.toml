@@ -12,6 +12,7 @@ iced = { version = "0.4.2", features = ["debug", "image", "pure", "svg"] }
 nordify = { path = "../nordify" }
 whatsinaname = { path = "../whatsinaname" }
 tempfile = "3.3.0"
+iced_native = "0.5.1"
 
 [profile.release]
 strip = true

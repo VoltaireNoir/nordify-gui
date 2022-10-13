@@ -1519,6 +1519,7 @@ dependencies = [
  "dirs",
  "fastrand",
  "iced",
+ "iced_native",
  "nordify",
  "tempfile",
  "whatsinaname",
