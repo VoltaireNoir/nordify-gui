@@ -1,9 +1,6 @@
-use iced::{ContentFit,Length,Color};
-use iced::pure::{image,text,Element,container,row,horizontal_space, vertical_space, column};
-use iced_aw::floating_button::Offset;
-use iced_aw::pure::FloatingElement;
+use iced::{ContentFit,Length};
+use iced::pure::{image,Element,row};
 
-use crate::theme::{BtmContainerStyle,PreviewLabelStyle};
 use crate::Event;
 
 pub struct NordifiedImage {
@@ -69,12 +66,6 @@ pub struct Previews {
 
 impl Previews {
     pub fn view(&self) -> Element<'_,Event> {
-        FloatingElement::new(self.image_view(),|| self.labels())
-            .offset(Offset {x: -6., y:-6.})
-            .into()
-    }
-
-    fn image_view(&self) -> Element<'_,Event> {
         row()
             .push(
                 self.original.view()
@@ -84,38 +75,6 @@ impl Previews {
             )
             .spacing(6)
             .height(Length::FillPortion(50))
-            .into()
-    }
-
-    fn labels(&self) -> Element<'_,Event> {
-        container(
-            row()
-                .push(
-                    container(
-                        text("ORIGINAL")
-                            .color(Color { r: 0.847, g: 0.870, b: 0.913, a: 0.65 }))
-                        .align_x(iced::alignment::Horizontal::Left)
-                        .center_y()
-                        .width(Length::FillPortion(1))
-                        .height(Length::Units(40))
-                        .style(PreviewLabelStyle)
-                        .padding(10)
-                )
-                .push(
-                    container(
-                        text("NORDIFIED")
-                            .color(Color { r: 0.847, g: 0.870, b: 0.913, a: 0.65 })
-                    )
-                        .align_x(iced::alignment::Horizontal::Right)
-                        .center_y()
-                        .width(Length::FillPortion(1))
-                        .height(Length::Units(40))
-                        .style(PreviewLabelStyle)
-                        .padding(10)
-                )
-                .spacing(6)
-        )
-            .padding(6)
             .into()
     }
 }
