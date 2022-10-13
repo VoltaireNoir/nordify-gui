@@ -16,7 +16,7 @@ use crate::Event;
 
 #[derive(Default)]
 pub struct Browser {
-    addrbar: AddressBar,
+    pub addrbar: AddressBar,
     contents: Contents,
     pub selected: String,
 }
@@ -26,6 +26,7 @@ pub enum BrowserEvent {
     AddrSubmit,
     AddrChanged(String),
     ContentClicked(usize),
+    DelSelected,
     DirUp,
 }
 
@@ -102,6 +103,15 @@ impl Browser {
                     self.addrbar.value = String::from(self.addrbar.addr.to_string_lossy());
                     self.contents.entries = Contents::get_contents(&self.addrbar.addr);
                 }
+            },
+
+            BrowserEvent::DelSelected => {
+                if self.selected.is_image() {
+                    fs::remove_file(&self.selected).expect("Failed to delete selected file");
+                    self.selected.clear();
+                    menu.config.filename.clear();
+                    self.reload_contents();
+                }
             }
         }
     }
@@ -111,9 +121,9 @@ impl Browser {
     }
 }
 
-struct AddressBar {
+pub struct AddressBar {
     value: String,
-    addr: PathBuf,
+    pub addr: PathBuf,
 }
 
 impl AddressBar {
