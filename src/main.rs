@@ -1,5 +1,7 @@
 use iced::{Length,Settings,Color,executor};
 use iced::pure::{Element,column,row, Application};
+use iced_native::keyboard::{self, KeyCode, Modifiers};
+use iced_native::Event as KeyEvent;
 
 mod menu;
 mod browser;
@@ -81,26 +83,44 @@ impl Application for NordifyGUI {
 
     fn subscription(&self) -> iced::Subscription<Self::Message> {
         iced_native::subscription::events_with(|e,_| {
-
-            use iced_native::keyboard::{self, KeyCode, Modifiers};
-            use iced_native::Event as KeyEvent;
-
             match e {
-                KeyEvent::Keyboard(keyboard::Event::KeyPressed { key_code, modifiers }) => {
-                    match (key_code, modifiers) {
-                        (KeyCode::P, Modifiers::CTRL) => Some(Event::Menu(MenuEvent::Preview)),
-                        (KeyCode::R, Modifiers::CTRL) => Some(Event::Menu(MenuEvent::Reset)),
-                        (KeyCode::S, Modifiers::CTRL) => Some(Event::Menu(MenuEvent::Save)),
-                        (KeyCode::Q, Modifiers::CTRL) => Some(Event::Quit),
-                        _ => None,
-                    }
-                },
-                _ => None,
+                KeyEvent::Keyboard(keyboard::Event::KeyPressed { key_code, modifiers })
+                    => keyboard_event_handler(key_code, modifiers),
+                _ => None
             }
         })
     }
 
     fn should_exit(&self) -> bool {
         self.exit
+    }
+}
+
+fn keyboard_event_handler(key: KeyCode, modifier: Modifiers) -> Option<Event> {
+    match modifier {
+        Modifiers::CTRL => {
+            use menu::MenuEvent::{Preview,Reset,Save};
+
+            match key {
+                KeyCode::P => Some(Event::Menu(Preview)),
+                KeyCode::R => Some(Event::Menu(Reset)),
+                KeyCode::S => Some(Event::Menu(Save)),
+                KeyCode::Q => Some(Event::Quit),
+                _ => None,
+            }
+        },
+
+        Modifiers::ALT => {
+            use menu::{MenuEvent::SelectMode,Mode::*};
+
+            match key {
+                KeyCode::Key1 => Some(Event::Menu(SelectMode(Default))),
+                KeyCode::Key2 => Some(Event::Menu(SelectMode(Creative))),
+                KeyCode::Key3 => Some(Event::Menu(SelectMode(Knn))),
+                _ => None,
+            }
+        },
+
+        _ => None,
     }
 }
