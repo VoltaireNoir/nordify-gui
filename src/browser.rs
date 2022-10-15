@@ -26,6 +26,7 @@ pub enum BrowserEvent {
     ContentClicked(usize),
     DelSelected,
     DirUp,
+    FocusAddrBar,
 }
 
 impl Browser {
@@ -67,7 +68,8 @@ impl Browser {
                 if PathBuf::from(&self.addrbar.value).is_dir() {
                     self.addrbar.addr.clear();
                     self.addrbar.addr.push(&self.addrbar.value);
-                    self.contents.entries = Contents::get_contents(&self.addrbar.addr)
+                    self.contents.entries = Contents::get_contents(&self.addrbar.addr);
+                    return self.contents.reset_scroll()
                 }
             }
             BrowserEvent::ContentClicked(id) => {
@@ -79,6 +81,7 @@ impl Browser {
                         self.addrbar.addr.clear();
                         self.addrbar.addr.push(&dir);
                         self.addrbar.value = dir;
+                        return self.contents.reset_scroll()
                     }
                     ContentType::Image => {
                         self.contents.clear_selection();
@@ -108,6 +111,10 @@ impl Browser {
                     menu.config.filename.clear();
                     self.reload_contents();
                 }
+            },
+
+            BrowserEvent::FocusAddrBar => {
+                return text_input::focus(self.addrbar.id.clone())
             }
         }
 
@@ -122,6 +129,7 @@ impl Browser {
 pub struct AddressBar {
     value: String,
     pub addr: PathBuf,
+    pub id: text_input::Id,
 }
 
 impl AddressBar {
@@ -133,6 +141,7 @@ impl AddressBar {
         .style(theme::TextInputType::BrowserBar)
         .size(16)
         .padding(5)
+        .id(self.id.clone())
         .into()
     }
 }
@@ -147,18 +156,21 @@ impl Default for AddressBar {
         AddressBar {
             addr: PathBuf::from(&home),
             value: home,
+            id: text_input::Id::unique(),
         }
     }
 }
 
 struct Contents {
     entries: Vec<Content>,
+    scroll_id: scrollable::Id,
 }
 
 impl Default for Contents {
     fn default() -> Self {
         Contents {
             entries: Self::get_contents(dirs::home_dir().unwrap_or_default().as_path()),
+            scroll_id: scrollable::Id::unique(),
         }
     }
 }
@@ -180,6 +192,7 @@ impl Contents {
                 container(self.entries.iter().fold(col, |c, f| c.push(f.view()))).padding(20)
                     .style(theme::ContainerType::Inner)
             )
+                .id(self.scroll_id.clone())
         )
         .style(theme::ContainerType::Inner)
         .padding(4)
@@ -193,6 +206,10 @@ impl Contents {
         self.entries
             .iter_mut()
             .for_each(|e| e.selected = false);
+    }
+
+    fn reset_scroll(&self) -> Command<Event> {
+        scrollable::snap_to(self.scroll_id.clone(), 0.)
     }
 
     fn get_contents<P: AsRef<Path>>(dir: P) -> Vec<Content> {

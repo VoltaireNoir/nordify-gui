@@ -103,6 +103,7 @@ fn keyboard_event_handler(key: KeyCode, modifier: Modifiers) -> Option<Event> {
                 KeyCode::S => Some(Event::Menu(Save)),
                 KeyCode::Delete => Some(Event::Browser(DelSelected)),
                 KeyCode::Q => Some(Event::Quit),
+                KeyCode::L => Some(Event::Browser(BrowserEvent::FocusAddrBar)),
                 _ => None,
             }
         },
