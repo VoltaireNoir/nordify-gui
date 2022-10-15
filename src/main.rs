@@ -1,4 +1,4 @@
-use iced::{Length,Settings,Element,Application,executor,Event as KeyEvent};
+use iced::{Length,Settings,Element,Application,executor,Event as KeyEvent, Renderer, Command};
 use iced::widget::{column,row};
 use iced::keyboard::{self, KeyCode, Modifiers};
 
@@ -10,6 +10,9 @@ mod theme;
 use browser::{Browser,BrowserEvent};
 use menu::{Menu,MenuEvent};
 use preview::Previews;
+use theme::*;
+
+pub type IcedElement<'a> = Element<'a, Event, iced::Renderer<NordTheme>>;
 
 fn main() {
     NordifyGUI::run(Settings::default())
@@ -35,7 +38,7 @@ impl Application for NordifyGUI {
     type Message = Event;
     type Executor = executor::Default;
     type Flags = ();
-    type Theme = iced::Theme;
+    type Theme = NordTheme;
 
     fn new(_flags: Self::Flags) -> (Self, iced::Command<Self::Message>) {
         (NordifyGUI::default(), iced::Command::none())
@@ -49,13 +52,11 @@ impl Application for NordifyGUI {
         match message {
             Event::Browser(event) => self.browser.update(&mut self.previews, &mut self.menu, event),
             Event::Menu(event) => self.menu.update(&mut self.previews, &mut self.browser, event),
-            Event::Quit => self.exit = true,
-        };
-
-        iced::Command::none()
+            Event::Quit => { self.exit = true; Command::none() },
+        }
     }
 
-    fn view(&self) -> Element<'_, Self::Message> {
+    fn view(&self) -> IcedElement {
         let spacing = 6;
         column![
                 self.previews.view(),
@@ -86,7 +87,7 @@ impl Application for NordifyGUI {
     }
 
     fn theme(&self) -> Self::Theme {
-        iced::Theme::Dark
+        NordTheme
     }
 }
 

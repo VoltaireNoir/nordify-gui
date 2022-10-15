@@ -1,7 +1,7 @@
 use iced::{
-    Color,Background,
+    Color,Background,overlay,
     widget::{
-        container,text_input,button,radio,scrollable,pick_list}
+        container,text_input,button,scrollable,text,pick_list}
 };
 
 pub const JUST_GREY: Color = Color { r: 0.65, g: 0.65, b: 0.65, a: 1. };
@@ -17,224 +17,215 @@ pub const RED: Color = Color { r: 0.749, g: 0.380, b: 0.415, a: 1. };
 pub const GREEN: Color = Color { r: 0.639, g: 0.745, b: 0.549, a: 1. };
 pub const YELLOW: Color = Color { r: 0.921, g: 0.796, b: 0.545, a: 1. };
 
-pub struct BtmContainerStyle;
+#[derive(Default)]
+pub struct NordTheme;
 
-impl container::StyleSheet for BtmContainerStyle {
+impl iced::application::StyleSheet for NordTheme {
     type Style = ();
-    fn appearance(&self, _style: Self::Style) -> container::Appearance {
-        container::Appearance {
-            background: Some(Background::Color(D_GREY)),
-            border_width: 0.,
-            ..Default::default()
+    fn appearance(&self, _style: Self::Style) -> iced::application::Appearance {
+        iced::application::Appearance {
+            background_color: BLUE,
+            text_color: D_GREY,
         }
     }
 }
 
-pub struct InnerContainerStyle;
+#[derive(Default,Copy,Clone)]
+pub enum ContainerType {
+    #[default]
+    Other,
+    Bottom,
+    Inner,
+}
 
-impl container::StyleSheet for InnerContainerStyle {
-    type Style = ();
-    fn appearance(&self, _style: Self::Style) -> container::Appearance {
-        container::Appearance {
-            background: Some(Background::Color(LD_GREY)),
-            border_radius: 3.5,
-            border_width: 2.,
-            border_color: LD_GREY,
-            ..Default::default()
+impl container::StyleSheet for NordTheme {
+    type Style = ContainerType;
+
+    fn appearance(&self, style: Self::Style) -> container::Appearance {
+        match style {
+            ContainerType::Bottom => {
+                container::Appearance {
+                    background: Some(Background::Color(D_GREY)),
+                    border_width: 0.,
+                    ..Default::default()
+                }
+            },
+            ContainerType::Inner => {
+                container::Appearance {
+                    background: Some(Background::Color(LD_GREY)),
+                    border_radius: 3.5,
+                    border_width: 2.,
+                    border_color: LD_GREY,
+                    ..Default::default()
+                }
+            },
+            _ => container::Appearance { ..Default::default() }
+        }
+    }
+}
+
+#[derive(Default,Clone, Copy)]
+pub enum TextInputType {
+    #[default]
+    BrowserBar,
+    FileName { valid: bool },
+}
+
+impl text_input::StyleSheet for NordTheme {
+    type Style = TextInputType;
+
+    fn active(&self, style: Self::Style) -> text_input::Appearance {
+        match style {
+            TextInputType::FileName { .. } => {
+                text_input::Appearance {
+                    background: Background::Color(D_GREY),
+                    border_color: LD_GREY,
+                    border_radius: 0.,
+                    border_width: 2.,
+                }
+            },
+            TextInputType::BrowserBar => {
+                text_input::Appearance {
+                    background: Background::Color(LD_GREY),
+                    border_radius: 3.5,
+                    border_width: 2.,
+                    border_color: LD_GREY,
+                }
             }
-    }
-}
-
-pub struct FileInputStyle {
-    valid: bool,
-}
-
-impl FileInputStyle {
-    pub fn new(valid: bool) -> Self {
-        FileInputStyle { valid }
-    }
-}
-
-impl text_input::StyleSheet for FileInputStyle {
-    type Style = ();
-
-    fn active(&self, _style: Self::Style) -> text_input::Appearance {
-        text_input::Appearance {
-            background: Background::Color(D_GREY),
-            border_color: LD_GREY,
-            border_radius: 0.,
-            border_width: 2.,
         }
     }
 
-    fn focused(&self, _style: Self::Style) -> text_input::Appearance {
-        text_input::Appearance {
-            background: Background::Color(D_GREY),
-            border_color: LL_GREY,
-            border_radius: 0.,
-            border_width: 2.,
+    fn focused(&self, style: Self::Style) -> text_input::Appearance {
+        match style {
+            TextInputType::FileName { .. } => {
+                text_input::Appearance {
+                    background: Background::Color(D_GREY),
+                    border_color: LL_GREY,
+                    border_radius: 0.,
+                    border_width: 2.,
+                }
+            },
+            TextInputType::BrowserBar => {
+                text_input::Appearance {
+                    background: Background::Color(LD_GREY),
+                    border_radius: 3.5,
+                    border_width: 2.,
+                    border_color: LD_GREY,
+                }
+            }
         }
     }
 
-    fn value_color(&self, _style: Self::Style) -> Color {
-        if self.valid { GREEN } else { RED }
-    }
-
-    fn placeholder_color(&self, _style: Self::Style) -> Color {
-        Color { r: 0.847, g: 0.870, b: 0.913, a: 0.7 }
-    }
-
-    fn selection_color(&self, _style: Self::Style) -> Color {
-        Color { r: 0.533, g: 0.752, b: 0.815, a: 0.7 }
-    }
-}
-
-pub struct AddressBarStyle;
-
-impl text_input::StyleSheet for AddressBarStyle {
-    type Style = ();
-
-    fn active(&self, _style: Self::Style) -> text_input::Appearance {
-        text_input::Appearance {
-            background: Background::Color(LD_GREY),
-            border_radius: 3.5,
-            border_width: 2.,
-            border_color: LD_GREY,
+    fn value_color(&self, style: Self::Style) -> Color {
+        match style {
+            TextInputType::FileName { valid } => {
+                if valid { GREEN } else { RED }
+            },
+            TextInputType::BrowserBar => {
+                JUST_GREY
+            },
         }
     }
 
-    fn focused(&self, _style: Self::Style) -> text_input::Appearance {
-        text_input::Appearance {
-            background: Background::Color(LD_GREY),
-            border_radius: 3.5,
-            border_width: 2.,
-            border_color: LD_GREY,
+    fn placeholder_color(&self, style: Self::Style) -> Color {
+        match style {
+            TextInputType::FileName { .. } => Color { r: 0.847, g: 0.870, b: 0.913, a: 0.7 },
+            TextInputType::BrowserBar => JUST_GREY,
         }
+
     }
 
-    fn value_color(&self, _style: Self::Style) -> Color {
-        JUST_GREY
-    }
-
-    fn placeholder_color(&self, _style: Self::Style) -> Color {
-        JUST_GREY
-    }
-
-    fn selection_color(&self, _style: Self::Style) -> Color {
-        Color { r: 0.533, g: 0.752, b: 0.815, a: 0.7 }
-    }
-}
-
-pub struct ContentButtonStyle {
-    selected: bool,
-}
-
-impl ContentButtonStyle {
-    pub fn new(selected: bool) -> Self {
-        ContentButtonStyle { selected }
-    }
-}
-
-impl button::StyleSheet for ContentButtonStyle {
-    type Style = ();
-    fn active(&self, style: Self::Style) -> button::Appearance {
-        let text_color = if self.selected { BLUE } else { WHITE };
-
-        button::Appearance {
-            background: Some(Background::Color(GREY)),
-            border_radius: 3.5,
-            border_width: 2.,
-            border_color: GREY,
-            text_color,
-            ..Default::default()
+    fn selection_color(&self, style: Self::Style) -> Color {
+        match style {
+            TextInputType::FileName { .. } => Color { r: 0.533, g: 0.752, b: 0.815, a: 0.7 },
+            TextInputType::BrowserBar => Color { r: 0.533, g: 0.752, b: 0.815, a: 0.7 },
         }
-    }
 
-    fn hovered(&self, style: Self::Style) -> button::Appearance {
-        button::Appearance {
-            background: Some(Background::Color(LL_GREY)),
-            border_radius: 3.5,
-            border_width: 2.,
-            border_color: LL_GREY,
-            text_color: BLUE,
-            ..Default::default()
-        }
     }
 }
 
-pub struct MainButtonStyle {
-    btype: BType,
+#[derive(Copy, Clone)]
+pub enum ButtonType {
+    MainButton { btype: MainType },
+    Content { selected: bool },
 }
 
-impl MainButtonStyle {
-    pub fn new(btype: BType) -> Self {
-        MainButtonStyle { btype }
-    }
-}
 
-pub enum BType {
+#[derive(Clone, Copy)]
+pub enum MainType {
     Preview,
     Save,
     Reset
 }
 
-impl button::StyleSheet for MainButtonStyle {
-    type Style = ();
-    fn active(&self, _style: Self::Style) -> button::Appearance {
-        let text_color = match self.btype {
-            BType::Save => BLUE,
-            BType::Preview => RED,
-            BType::Reset => YELLOW,
-        };
+impl Default for ButtonType {
+    fn default() -> Self {
+        ButtonType::MainButton { btype: MainType::Preview }
+    }
+}
 
-        button::Appearance {
-            background: None,
-            text_color,
-            ..Default::default()
+impl button::StyleSheet for NordTheme {
+    type Style = ButtonType;
+
+    fn active(&self, style: Self::Style) -> button::Appearance {
+        match style {
+            ButtonType::Content { selected } => {
+                let text_color = if selected { BLUE } else { WHITE };
+                button::Appearance {
+                    background: Some(Background::Color(GREY)),
+                    border_radius: 3.5,
+                    border_width: 2.,
+                    border_color: GREY,
+                    text_color,
+                    ..Default::default()
+                }
+            },
+
+            ButtonType::MainButton { btype } => {
+                let text_color = match btype {
+                    MainType::Save => BLUE,
+                    MainType::Preview => RED,
+                    MainType::Reset => YELLOW,
+                };
+
+                button::Appearance {
+                    background: None,
+                    text_color,
+                    ..Default::default()
+                }
+            }
         }
+
     }
 
     fn hovered(&self, style: Self::Style) -> button::Appearance {
-        let text_color = match self.btype {
-            BType::Preview | BType::Reset => BLUE,
-            BType::Save => GREEN,
-        };
-        button::Appearance {
-            background: None,
-            text_color,
-            ..Default::default()
+        match style {
+            ButtonType::Content { .. } => {
+                button::Appearance {
+                    background: Some(Background::Color(LL_GREY)),
+                    border_radius: 3.5,
+                    border_width: 2.,
+                    border_color: LL_GREY,
+                    text_color: BLUE,
+                    ..Default::default()
+                }
+            },
+            ButtonType::MainButton { btype } => {
+                let text_color = match btype {
+                    MainType::Preview | MainType::Reset => BLUE,
+                    MainType::Save => GREEN,
+                };
+                button::Appearance {
+                    background: None,
+                    text_color,
+                    ..Default::default()
+                }
+            }
         }
     }
 }
 
-pub struct ModesStyle;
-
-impl radio::StyleSheet for ModesStyle {
-    type Style = ();
-    fn active(&self, style: Self::Style) -> radio::Appearance {
-        radio::Appearance {
-            dot_color: BLUE,
-            text_color: Some(WHITE),
-            background: Background::Color(D_GREY),
-            border_color: D_GREY,
-            border_width: 0.0,
-        }
-    }
-
-    fn hovered(&self, style: Self::Style) -> radio::Appearance {
-        radio::Appearance {
-            dot_color: BLUE,
-            text_color: Some(BLUE),
-            background: Background::Color(D_GREY),
-            border_color: D_GREY,
-            border_width: 0.0,
-        }
-    }
-}
-
-pub struct ScrollableStyle;
-
-impl scrollable::StyleSheet for ScrollableStyle {
+impl scrollable::StyleSheet for NordTheme {
     type Style = ();
     fn active(&self, _style: Self::Style) -> scrollable::Scrollbar {
         let fg = { let mut c = L_WHITE; c.a = 0.8; c };
@@ -253,17 +244,70 @@ impl scrollable::StyleSheet for ScrollableStyle {
         }
     }
 
-    fn hovered(&self, style: Self::Style) -> scrollable::Scrollbar {
+    fn hovered(&self, _style: Self::Style) -> scrollable::Scrollbar {
         let mut scr = self.active(());
         scr.scroller.color = L_WHITE;
         scr.scroller.border_color = L_WHITE;
         scr
     }
 
-    fn dragging(&self, style: Self::Style) -> scrollable::Scrollbar {
+    fn dragging(&self, _style: Self::Style) -> scrollable::Scrollbar {
         let mut scr = self.hovered(());
         scr.scroller.color = BLUE;
         scr.scroller.border_color = BLUE;
         scr
+    }
+}
+
+impl pick_list::StyleSheet for NordTheme {
+    type Style = ();
+
+    fn active(&self, _style: <Self as pick_list::StyleSheet>::Style) -> pick_list::Appearance {
+        pick_list::Appearance {
+            text_color: LL_WHITE,
+            placeholder_color: LL_GREY,
+            background: Background::Color(D_GREY),
+            border_radius: 0.,
+            border_width: 0.,
+            border_color: D_GREY,
+            icon_size: 1.,
+        }
+    }
+
+    fn hovered(&self, _style: <Self as pick_list::StyleSheet>::Style) -> pick_list::Appearance {
+        self.active(())
+    }
+}
+
+impl overlay::menu::StyleSheet for NordTheme {
+    type Style = ();
+    fn appearance(&self, _style: Self::Style) -> overlay::menu::Appearance {
+        overlay::menu::Appearance {
+            text_color: LL_WHITE,
+            background: Background::Color(D_GREY),
+            border_width: 0.,
+            border_radius: 0.,
+            border_color: D_GREY,
+            selected_text_color: BLUE,
+            selected_background: Background::Color(D_GREY),
+        }
+    }
+}
+
+#[derive(Default,Clone,Copy)]
+pub enum TextType {
+    Label,
+    #[default]
+    Other,
+}
+
+impl text::StyleSheet for NordTheme {
+    type Style = TextType;
+    fn appearance(&self, style: Self::Style) -> text::Appearance {
+        match style {
+            TextType::Other => text::Appearance { color: None },
+            TextType::Label => text::Appearance { color: Some(JUST_GREY) },
+        }
+
     }
 }

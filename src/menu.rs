@@ -1,15 +1,13 @@
 use std::path::PathBuf;
 use iced::{
-    Length,alignment::Horizontal,Element,
-    widget::{container,row,text,button,column,text_input,pick_list},
+    Length,alignment::Horizontal,
+    widget::{container,row,text,button,column,text_input,pick_list}, Command,
 };
 use tempfile::TempDir;
 use whatsinaname::AboutFile;
 
-use crate::browser::Browser;
+use crate::{browser::Browser, theme::*};
 use crate::preview::{Previews,ImageView};
-use crate::theme::*;
-
 use super::Event;
 
 #[derive(Clone, Debug)]
@@ -56,12 +54,13 @@ impl Default for Menu {
 }
 
 impl Menu {
-    pub fn view(&self) -> Element<Event> {
+    pub fn view(&self) -> crate::IcedElement {
         let top = row![
                     container(
                         text("MODES")
                             .vertical_alignment(iced::alignment::Vertical::Top)
                             .horizontal_alignment(Horizontal::Left)
+                            .style(TextType::Label)
                             .size(16)
                     )
                         .width(Length::Fill)
@@ -72,7 +71,8 @@ impl Menu {
                            .width(Length::Fill)
                            .size(19)
                     )
-                        .on_press(Event::Menu(MenuEvent::Preview)),
+                .on_press(Event::Menu(MenuEvent::Preview))
+                .style(ButtonType::MainButton { btype: MainType::Preview }),
                 ]
                     .width(Length::Fill)
                     .spacing(5);
@@ -86,6 +86,7 @@ impl Menu {
 
         let filename = text_input("filename", &self.config.filename, |s| Event::Menu(MenuEvent::FilenameChanged(s)))
                     .width(Length::FillPortion(25))
+                    .style(TextInputType::FileName { valid: self.config.filename.is_valid_image() })
                     .size(16)
                     .padding(8);
 
@@ -93,12 +94,14 @@ impl Menu {
                     container(
                         button(text("SAVE").horizontal_alignment(Horizontal::Center).size(19))
                             .on_press(Event::Menu(MenuEvent::Save))
+                            .style(ButtonType::MainButton { btype: MainType::Save })
                     )
                         .width(Length::Fill)
                         .align_x(Horizontal::Center),
                     container(
                         button(text("RESET").horizontal_alignment(Horizontal::Center).size(19))
                             .on_press(Event::Menu(MenuEvent::Reset))
+                            .style(ButtonType::MainButton { btype: MainType::Reset })
                     )
                         .width(Length::Fill)
                         .align_x(Horizontal::Center),
@@ -109,12 +112,13 @@ impl Menu {
                 .padding(10)
                 .spacing(5)
         )
+            .style(ContainerType::Bottom)
             .width(Length::FillPortion(25))
             .height(Length::FillPortion(50))
             .into()
     }
 
-    pub fn update(&mut self, previews: &mut Previews, browser: &mut Browser, event: MenuEvent) {
+    pub fn update(&mut self, previews: &mut Previews, browser: &mut Browser, event: MenuEvent) -> Command<Event> {
         match event {
             MenuEvent::Preview => {
                 if !browser.selected.is_empty() {
@@ -161,6 +165,8 @@ impl Menu {
             MenuEvent::SelectMode(m) => self.config.mode = m,
             MenuEvent::FilenameChanged(s) => self.config.filename = s,
         }
+
+        Command::none()
     }
 }
 

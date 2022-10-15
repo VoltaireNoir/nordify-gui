@@ -1,6 +1,6 @@
 use iced::{
-    Length,  Element,
-    widget::{svg, Column, button, column, container, row, scrollable, text, text_input},
+    Length,  Command,
+    widget::{svg, Column, button, column, container, row, scrollable, text, text_input}, Renderer,
 };
 use std::{
     fs::{self, DirEntry},
@@ -8,9 +8,8 @@ use std::{
 };
 use whatsinaname::AboutFile;
 
-use crate::menu::Menu;
+use crate::{menu::Menu, theme::{NordTheme, self}};
 use crate::preview::{ImageView, Previews};
-use crate::theme::{self, BtmContainerStyle, InnerContainerStyle, JUST_GREY};
 use crate::Event;
 
 #[derive(Default)]
@@ -30,13 +29,14 @@ pub enum BrowserEvent {
 }
 
 impl Browser {
-    pub fn view(&self) -> Element<'_, Event> {
+    pub fn view(&self) -> crate::IcedElement {
         let top_bar = row![
             container(
                 text("BROWSE")
                     .size(16)
                     .vertical_alignment(iced::alignment::Vertical::Center)
                     .horizontal_alignment(iced::alignment::Horizontal::Center)
+                    .style(theme::TextType::Label)
                     .height(Length::Fill),
             )
                 .padding(3)
@@ -55,10 +55,11 @@ impl Browser {
         )
         .width(Length::FillPortion(75))
         .height(Length::FillPortion(50))
+        .style(theme::ContainerType::Bottom)
         .into()
     }
 
-    pub fn update(&mut self, previews: &mut Previews, menu: &mut Menu, message: BrowserEvent) {
+    pub fn update(&mut self, previews: &mut Previews, menu: &mut Menu, message: BrowserEvent) -> Command<Event> {
         match message {
             BrowserEvent::AddrChanged(v) => self.addrbar.value = v,
 
@@ -109,6 +110,8 @@ impl Browser {
                 }
             }
         }
+
+        Command::none()
     }
 
     pub fn reload_contents(&mut self) {
@@ -122,11 +125,12 @@ pub struct AddressBar {
 }
 
 impl AddressBar {
-    fn view(&self) -> Element<Event> {
+    fn view(&self) -> crate::IcedElement {
         text_input("Directory Location", &self.value, |s| {
             Event::Browser(BrowserEvent::AddrChanged(s))
         })
         .on_submit(Event::Browser(BrowserEvent::AddrSubmit))
+        .style(theme::TextInputType::BrowserBar)
         .size(16)
         .padding(5)
         .into()
@@ -160,11 +164,12 @@ impl Default for Contents {
 }
 
 impl Contents {
-    fn view(&self) -> Element<Event> {
-        let col: Column<'_, Event> = column![
+    fn view(&self) -> crate::IcedElement {
+        let col: Column<'_, Event, Renderer<NordTheme>> = column![
                 button(text(" ..").size(18))
                     .on_press(Event::Browser(BrowserEvent::DirUp))
                     .width(Length::FillPortion(75))
+                    .style(theme::ButtonType::Content { selected: false })
                     .padding(4)
         ]
             .spacing(10)
@@ -172,12 +177,15 @@ impl Contents {
 
         container(
             scrollable(
-                container(self.entries.iter().fold(col, |c, f| c.push(f.view()))).padding(20),
+                container(self.entries.iter().fold(col, |c, f| c.push(f.view()))).padding(20)
+                    .style(theme::ContainerType::Inner)
             )
         )
+        .style(theme::ContainerType::Inner)
         .padding(4)
         .width(Length::FillPortion(75))
         .height(Length::Fill)
+        .style(theme::ContainerType::Inner)
         .into()
     }
 
@@ -244,7 +252,7 @@ impl Content {
         }
     }
 
-    fn view(&self) -> Element<Event> {
+    fn view(&self) -> container::Container<Event, Renderer<NordTheme>> {
         use ContentType::*;
         let btcontent = text(self.handle.file_name().to_string_lossy())
             .size(16)
@@ -268,15 +276,16 @@ impl Content {
         };
         let button = match self.ctype {
             Directory | ContentType::Image => button(btcontent)
+                .style(theme::ButtonType::Content { selected: self.selected })
                 .on_press(Event::Browser(BrowserEvent::ContentClicked(self.id)))
                 .width(Length::Fill),
             Generic => button(btcontent)
+                .style(theme::ButtonType::Content { selected: false })
                 .width(Length::Fill),
         };
 
         container(row![icon,button].spacing(6))
             .center_y()
-            .into()
     }
 }
 

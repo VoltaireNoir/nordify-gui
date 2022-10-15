@@ -1,8 +1,6 @@
 use iced::{ContentFit,Length,Element};
 use iced::widget::{image,row};
 
-use crate::Event;
-
 pub struct NordifiedImage {
     loc: String,
 }
@@ -49,7 +47,7 @@ pub trait ImageView {
     fn location(&self) -> &str;
     fn set_loc(&mut self, new: &str);
 
-    fn view(&self) -> Element<'_,Event> {
+    fn view(&self) -> crate::IcedElement {
         image(self.location())
             .content_fit(ContentFit::Fill)
             .width(Length::FillPortion(50))
@@ -65,7 +63,7 @@ pub struct Previews {
 }
 
 impl Previews {
-    pub fn view(&self) -> Element<'_,Event> {
+    pub fn view(&self) -> crate::IcedElement {
         row!(
             self.original.view(),
             self.nordified.view(),
