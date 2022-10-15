@@ -1,5 +1,5 @@
-use iced::{ContentFit,Length};
-use iced::pure::{image,Element,row};
+use iced::{ContentFit,Length,Element};
+use iced::widget::{image,row};
 
 use crate::Event;
 
@@ -66,13 +66,10 @@ pub struct Previews {
 
 impl Previews {
     pub fn view(&self) -> Element<'_,Event> {
-        row()
-            .push(
-                self.original.view()
-            )
-            .push(
-                self.nordified.view(),
-            )
+        row!(
+            self.original.view(),
+            self.nordified.view(),
+        )
             .spacing(6)
             .height(Length::FillPortion(50))
             .into()

@@ -1,7 +1,6 @@
 use iced::{
-    Length,
-    pure::widget::{svg, Column},
-    pure::{button, column, container, row, scrollable, text, text_input, Element},
+    Length,  Element,
+    widget::{svg, Column, button, column, container, row, scrollable, text, text_input},
 };
 use std::{
     fs::{self, DirEntry},
@@ -32,34 +31,30 @@ pub enum BrowserEvent {
 
 impl Browser {
     pub fn view(&self) -> Element<'_, Event> {
+        let top_bar = row![
+            container(
+                text("BROWSE")
+                    .size(16)
+                    .vertical_alignment(iced::alignment::Vertical::Center)
+                    .horizontal_alignment(iced::alignment::Horizontal::Center)
+                    .height(Length::Fill),
+            )
+                .padding(3)
+                .align_y(iced::alignment::Vertical::Center),
+
+            self.addrbar.view(),
+        ]
+            .spacing(12)
+            .width(Length::FillPortion(75));
+
         container(
-            column()
-                .push(
-                    row()
-                        .push(
-                            container(
-                                text("BROWSE")
-                                    .color(JUST_GREY)
-                                    .size(16)
-                                    .vertical_alignment(iced::alignment::Vertical::Center)
-                                    .horizontal_alignment(iced::alignment::Horizontal::Center)
-                                    .height(Length::Fill),
-                            )
-                            .padding(3)
-                            .align_y(iced::alignment::Vertical::Center),
-                        )
-                        .push(self.addrbar.view())
-                        .spacing(12)
-                        .width(Length::FillPortion(75)),
-                )
-                .push(self.contents.view())
+            column![top_bar, self.contents.view()]
                 .width(Length::FillPortion(75))
                 .padding(10)
                 .spacing(5),
         )
         .width(Length::FillPortion(75))
         .height(Length::FillPortion(50))
-        .style(BtmContainerStyle)
         .into()
     }
 
@@ -134,7 +129,6 @@ impl AddressBar {
         .on_submit(Event::Browser(BrowserEvent::AddrSubmit))
         .size(16)
         .padding(5)
-        .style(theme::AddressBarStyle)
         .into()
     }
 }
@@ -167,14 +161,12 @@ impl Default for Contents {
 
 impl Contents {
     fn view(&self) -> Element<Event> {
-        let col: Column<'_, Event> = column()
-            .push(
+        let col: Column<'_, Event> = column![
                 button(text(" ..").size(18))
                     .on_press(Event::Browser(BrowserEvent::DirUp))
                     .width(Length::FillPortion(75))
-                    .style(theme::ContentButtonStyle::new(false))
-                    .padding(4),
-            )
+                    .padding(4)
+        ]
             .spacing(10)
             .width(Length::FillPortion(75));
 
@@ -182,10 +174,8 @@ impl Contents {
             scrollable(
                 container(self.entries.iter().fold(col, |c, f| c.push(f.view()))).padding(20),
             )
-            .style(theme::ScrollableStyle),
         )
         .padding(4)
-        .style(InnerContainerStyle)
         .width(Length::FillPortion(75))
         .height(Length::Fill)
         .into()
@@ -256,7 +246,9 @@ impl Content {
 
     fn view(&self) -> Element<Event> {
         use ContentType::*;
-        let btcontent = text(self.handle.file_name().to_string_lossy()).size(16).width(Length::FillPortion(1));
+        let btcontent = text(self.handle.file_name().to_string_lossy())
+            .size(16)
+            .width(Length::FillPortion(1));
 
         let icon = {
             let src = match self.ctype {
@@ -277,14 +269,12 @@ impl Content {
         let button = match self.ctype {
             Directory | ContentType::Image => button(btcontent)
                 .on_press(Event::Browser(BrowserEvent::ContentClicked(self.id)))
-                .style(theme::ContentButtonStyle::new(self.selected))
                 .width(Length::Fill),
             Generic => button(btcontent)
-                .style(theme::ContentButtonStyle::new(false))
                 .width(Length::Fill),
         };
 
-        container(row().push(icon).push(button).spacing(6))
+        container(row![icon,button].spacing(6))
             .center_y()
             .into()
     }

@@ -1,15 +1,16 @@
 use std::path::PathBuf;
-use iced::{Length,alignment::Horizontal};
-use iced::pure::{Element,container,row,text,button,column,text_input,radio,pick_list};
+use iced::{
+    Length,alignment::Horizontal,Element,
+    widget::{container,row,text,button,column,text_input,pick_list},
+};
 use tempfile::TempDir;
 use whatsinaname::AboutFile;
 
 use crate::browser::Browser;
 use crate::preview::{Previews,ImageView};
-use crate::theme;
+use crate::theme::*;
 
 use super::Event;
-use super::theme::{BtmContainerStyle,JUST_GREY};
 
 #[derive(Clone, Debug)]
 pub enum MenuEvent {
@@ -28,6 +29,21 @@ pub enum Mode {
     Knn,
 }
 
+impl Mode {
+    const ALL: [Mode;3] = [Self::Default,Self::Creative,Self::Knn];
+}
+
+impl std::fmt::Display for Mode {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let name = match self {
+            Self::Creative => "Creative",
+            Self::Default => "Default",
+            Self::Knn => "kNN",
+        };
+        write!(f, "{name}")
+    }
+}
+
 pub struct Menu {
     pub config: Config,
     temp: TempDir,
@@ -41,109 +57,60 @@ impl Default for Menu {
 
 impl Menu {
     pub fn view(&self) -> Element<Event> {
+        let top = row![
+                    container(
+                        text("MODES")
+                            .vertical_alignment(iced::alignment::Vertical::Top)
+                            .horizontal_alignment(Horizontal::Left)
+                            .size(16)
+                    )
+                        .width(Length::Fill)
+                        .padding(3),
+                    button(text("PREVIEW")
+                           .vertical_alignment(iced::alignment::Vertical::Top)
+                           .horizontal_alignment(Horizontal::Right)
+                           .width(Length::Fill)
+                           .size(19)
+                    )
+                        .on_press(Event::Menu(MenuEvent::Preview)),
+                ]
+                    .width(Length::Fill)
+                    .spacing(5);
+
+        let modes = pick_list(
+                    Mode::ALL.to_vec(),
+                    Some(self.config.mode),
+                    |m| Event::Menu(MenuEvent::SelectMode(m))
+                )
+                    .width(Length::Fill);
+
+        let filename = text_input("filename", &self.config.filename, |s| Event::Menu(MenuEvent::FilenameChanged(s)))
+                    .width(Length::FillPortion(25))
+                    .size(16)
+                    .padding(8);
+
+        let save_reset = row![
+                    container(
+                        button(text("SAVE").horizontal_alignment(Horizontal::Center).size(19))
+                            .on_press(Event::Menu(MenuEvent::Save))
+                    )
+                        .width(Length::Fill)
+                        .align_x(Horizontal::Center),
+                    container(
+                        button(text("RESET").horizontal_alignment(Horizontal::Center).size(19))
+                            .on_press(Event::Menu(MenuEvent::Reset))
+                    )
+                        .width(Length::Fill)
+                        .align_x(Horizontal::Center),
+                ];
+
         container(
-            column()
-                .push(
-                    row()
-                        .push(
-                            container(
-                                text("MODES")
-                                    .color(JUST_GREY)
-                                    .vertical_alignment(iced::alignment::Vertical::Top)
-                                    .horizontal_alignment(Horizontal::Left)
-                                    .size(16)
-                            )
-                                .width(Length::Fill)
-                                .padding(3)
-                        )
-                        .push(
-                            button(text("PREVIEW")
-                                   .vertical_alignment(iced::alignment::Vertical::Top)
-                                   .horizontal_alignment(Horizontal::Right)
-                                   .width(Length::Fill)
-                                   .size(20)
-                            )
-                                .on_press(Event::Menu(MenuEvent::Preview))
-                                .style(theme::MainButtonStyle::new(theme::BType::Preview))
-                        )
-                        .width(Length::Fill)
-                        .spacing(5)
-                )
-                .push(
-                    row()
-                        .push(
-                            container(
-                                radio("Default", Mode::Default, Some(self.config.mode), |m| Event::Menu(MenuEvent::SelectMode(m)))
-                                    .size(16)
-                                    .spacing(4)
-                                    .text_size(18)
-                                    .style(theme::ModesStyle)
-                            )
-                                .width(Length::Fill)
-                                .align_x(Horizontal::Center)
-                                .padding(2)
-                        )
-                        .push(
-                            container(
-                                radio("Creative", Mode::Creative, Some(self.config.mode), |m| Event::Menu(MenuEvent::SelectMode(m)))
-                                    .size(16)
-                                    .spacing(4)
-                                    .text_size(18)
-                                    .style(theme::ModesStyle)
-                            )
-                                .width(Length::Fill)
-                                .align_x(Horizontal::Center)
-                                .padding(2)
-                        )
-                        .push(
-                            container(
-                                radio("kNN", Mode::Knn, Some(self.config.mode), |m| Event::Menu(MenuEvent::SelectMode(m)))
-                                    .size(16)
-                                    .spacing(4)
-                                    .text_size(18)
-                                    .style(theme::ModesStyle)
-                            )
-                                .align_x(Horizontal::Center)
-                                .width(Length::Fill)
-                                .padding(2)
-                        )
-                        .width(Length::Fill)
-                        .padding(5)
-                )
-                .push(
-                        text_input("filename", &self.config.filename, |s| Event::Menu(MenuEvent::FilenameChanged(s)))
-                        .width(Length::FillPortion(25))
-                        .size(16)
-                        .padding(8)
-                        .style(theme::FileInputStyle::new(self.config.filename.is_valid_image()))
-                )
-                .push(
-                    row()
-                        .push(
-                            container(
-                                button(text("SAVE").horizontal_alignment(Horizontal::Center).size(20))
-                                    .on_press(Event::Menu(MenuEvent::Save))
-                                    .style(theme::MainButtonStyle::new(theme::BType::Save))
-                            )
-                                .width(Length::Fill)
-                                .align_x(Horizontal::Center)
-                        )
-                        .push(
-                            container(
-                                button(text("RESET").horizontal_alignment(Horizontal::Center).size(20))
-                                    .on_press(Event::Menu(MenuEvent::Reset))
-                                    .style(theme::MainButtonStyle::new(theme::BType::Reset))
-                            )
-                                .width(Length::Fill)
-                                .align_x(Horizontal::Center)
-                        )
-                )
+            column![top, modes, filename, save_reset]
                 .padding(10)
                 .spacing(5)
         )
             .width(Length::FillPortion(25))
             .height(Length::FillPortion(50))
-            .style(BtmContainerStyle)
             .into()
     }
 
@@ -163,18 +130,21 @@ impl Menu {
                 }
             },
             MenuEvent::Save => {
-                if !browser.selected.is_empty() {
-                    let sp = PathBuf::from(&browser.selected);
-                    if self.config.filename.is_valid_image() {
-                        let loc = format!("{}/{}",sp.parent().unwrap().display(),self.config.filename);
-                        let predictor: nordify::Predictor = match self.config.mode {
-                            Mode::Default => nordify::color_predictv2,
-                            Mode::Creative => nordify::color_predict,
-                            Mode::Knn => nordify::color_predictv2,
-                        };
-                        nordify::nordify(browser.selected.clone(), Some(loc), predictor, None);
-                        browser.reload_contents();
-                    }
+                if !browser.selected.is_empty() && self.config.filename.is_valid_image() {
+                    let mut loc = browser.addrbar.addr.clone();
+                    loc.push(&self.config.filename);
+                    let predictor: nordify::Predictor = match self.config.mode {
+                        Mode::Default => nordify::color_predictv2,
+                        Mode::Creative => nordify::color_predict,
+                        Mode::Knn => nordify::color_predictv2,
+                    };
+                    nordify::nordify(
+                        browser.selected.clone(),
+                        Some(dbg!(loc.to_string_lossy().to_string())),
+                        predictor,
+                        None
+                    );
+                    browser.reload_contents();
                 }
             },
             MenuEvent::Reset => {

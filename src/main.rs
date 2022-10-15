@@ -1,7 +1,6 @@
-use iced::{Length,Settings,Color,executor};
-use iced::pure::{Element,column,row, Application};
-use iced_native::keyboard::{self, KeyCode, Modifiers};
-use iced_native::Event as KeyEvent;
+use iced::{Length,Settings,Element,Application,executor,Event as KeyEvent};
+use iced::widget::{column,row};
+use iced::keyboard::{self, KeyCode, Modifiers};
 
 mod menu;
 mod browser;
@@ -36,6 +35,7 @@ impl Application for NordifyGUI {
     type Message = Event;
     type Executor = executor::Default;
     type Flags = ();
+    type Theme = iced::Theme;
 
     fn new(_flags: Self::Flags) -> (Self, iced::Command<Self::Message>) {
         (NordifyGUI::default(), iced::Command::none())
@@ -57,32 +57,22 @@ impl Application for NordifyGUI {
 
     fn view(&self) -> Element<'_, Self::Message> {
         let spacing = 6;
-        column()
-            .push(
-                self.previews.view()
+        column![
+                self.previews.view(),
+            row!(
+                self.browser.view(),
+                self.menu.view(),
             )
-            .push(
-                row()
-                    .push(
-                        self.browser.view()
-                    )
-                    .push(
-                        self.menu.view()
-                    )
-                    .spacing(spacing)
-                    .height(Length::FillPortion(50))
-            )
+                .spacing(spacing)
+                .height(Length::FillPortion(50))
+            ]
             .spacing(spacing)
             .padding(spacing)
             .into()
     }
 
-    fn background_color(&self) -> Color {
-        theme::BLUE
-    }
-
     fn subscription(&self) -> iced::Subscription<Self::Message> {
-        iced_native::subscription::events_with(|e,_| {
+        iced::subscription::events_with(|e,_| {
             match e {
                 KeyEvent::Keyboard(keyboard::Event::KeyPressed { key_code, modifiers })
                     => keyboard_event_handler(key_code, modifiers),
@@ -94,17 +84,23 @@ impl Application for NordifyGUI {
     fn should_exit(&self) -> bool {
         self.exit
     }
+
+    fn theme(&self) -> Self::Theme {
+        iced::Theme::Dark
+    }
 }
 
 fn keyboard_event_handler(key: KeyCode, modifier: Modifiers) -> Option<Event> {
     match modifier {
         Modifiers::CTRL => {
             use menu::MenuEvent::{Preview,Reset,Save};
+            use BrowserEvent::DelSelected;
 
             match key {
                 KeyCode::P => Some(Event::Menu(Preview)),
                 KeyCode::R => Some(Event::Menu(Reset)),
                 KeyCode::S => Some(Event::Menu(Save)),
+                KeyCode::Delete => Some(Event::Browser(DelSelected)),
                 KeyCode::Q => Some(Event::Quit),
                 _ => None,
             }
