@@ -104,6 +104,7 @@ fn keyboard_event_handler(key: KeyCode, modifier: Modifiers) -> Option<Event> {
                 KeyCode::Delete => Some(Event::Browser(DelSelected)),
                 KeyCode::Q => Some(Event::Quit),
                 KeyCode::L => Some(Event::Browser(BrowserEvent::FocusAddrBar)),
+                KeyCode::F => Some(Event::Menu(MenuEvent::FocusFileName)),
                 _ => None,
             }
         },

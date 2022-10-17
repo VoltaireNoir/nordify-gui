@@ -15,6 +15,7 @@ pub enum MenuEvent {
     Reset,
     SelectMode(Mode),
     FilenameChanged(String),
+    FocusFileName,
 }
 
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
@@ -167,7 +168,10 @@ impl Menu {
                 }
             },
             MenuEvent::SelectMode(m) => self.config.mode = m,
+
             MenuEvent::FilenameChanged(s) => self.config.filename = s,
+
+            MenuEvent::FocusFileName => return text_input::focus(self.filename_id.clone()),
         }
 
         Command::none()
