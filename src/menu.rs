@@ -43,11 +43,16 @@ impl std::fmt::Display for Mode {
 pub struct Menu {
     pub config: Config,
     temp: TempDir,
+    filename_id: text_input::Id,
 }
 
 impl Default for Menu {
     fn default() -> Self {
-       Menu { temp: tempfile::tempdir().unwrap(), config: Default::default() }
+       Menu {
+           temp: tempfile::tempdir().unwrap(),
+           config: Default::default(),
+           filename_id: text_input::Id::unique(),
+       }
     }
 }
 
@@ -85,6 +90,7 @@ impl Menu {
         let filename = text_input("filename", &self.config.filename, |s| Event::Menu(MenuEvent::FilenameChanged(s)))
                     .width(Length::FillPortion(25))
                     .style(theme::TextInputType::FileName { valid: self.config.filename.is_valid_image() })
+                    .id(self.filename_id.clone())
                     .size(16)
                     .padding(8);
 
