@@ -68,11 +68,11 @@ impl Previews {
     pub fn view(&self) -> crate::IcedElement {
         row!(
             tooltip(self.original.view(),"Original",tooltip::Position::FollowCursor)
-                .size(14)
+                .size(16)
                 .style(theme::ContainerType::Tooltip),
 
             tooltip(self.nordified.view(),"Nordified",tooltip::Position::FollowCursor)
-                .size(14)
+                .size(16)
                 .style(theme::ContainerType::Tooltip),
         )
             .spacing(6)
