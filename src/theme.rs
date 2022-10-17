@@ -266,16 +266,21 @@ impl pick_list::StyleSheet for NordTheme {
         pick_list::Appearance {
             text_color: LL_WHITE,
             placeholder_color: LL_GREY,
-            background: Background::Color(D_GREY),
-            border_radius: 0.,
-            border_width: 0.,
-            border_color: D_GREY,
-            icon_size: 1.,
+            background: Background::Color(LD_GREY),
+            border_radius: 3.5,
+            border_width: 2.,
+            border_color: LD_GREY,
+            icon_size: 0.5,
         }
     }
 
     fn hovered(&self, _style: <Self as pick_list::StyleSheet>::Style) -> pick_list::Appearance {
-        self.active(())
+        pick_list::Appearance {
+            background: Background::Color(LL_GREY),
+            border_color: LL_GREY,
+            text_color: BLUE,
+            ..self.active(())
+        }
     }
 }
 
@@ -284,12 +289,12 @@ impl overlay::menu::StyleSheet for NordTheme {
     fn appearance(&self, _style: Self::Style) -> overlay::menu::Appearance {
         overlay::menu::Appearance {
             text_color: LL_WHITE,
-            background: Background::Color(D_GREY),
-            border_width: 0.,
-            border_radius: 0.,
-            border_color: D_GREY,
+            background: Background::Color(LD_GREY),
+            border_width: 2.,
+            border_radius: 3.5,
+            border_color: LD_GREY,
             selected_text_color: BLUE,
-            selected_background: Background::Color(D_GREY),
+            selected_background: Background::Color(LL_GREY),
         }
     }
 }

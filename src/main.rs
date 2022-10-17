@@ -1,4 +1,4 @@
-use iced::{Length,Settings,Element,Application,executor,Event as KeyEvent, Renderer, Command};
+use iced::{Length,Settings,Element,Application,executor,Event as KeyEvent, Command};
 use iced::widget::{column,row};
 use iced::keyboard::{self, KeyCode, Modifiers};
 
