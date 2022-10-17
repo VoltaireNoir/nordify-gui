@@ -6,9 +6,7 @@ use iced::{
 use tempfile::TempDir;
 use whatsinaname::AboutFile;
 
-use crate::{browser::Browser, theme::{*, self}};
-use crate::preview::{Previews,ImageView};
-use super::Event;
+use crate:: { browser::Browser, preview::{Previews,ImageView}, theme, Event };
 
 #[derive(Clone, Debug)]
 pub enum MenuEvent {
@@ -60,7 +58,7 @@ impl Menu {
                         text("MODES")
                             .vertical_alignment(iced::alignment::Vertical::Top)
                             .horizontal_alignment(Horizontal::Left)
-                            .style(TextType::Label)
+                            .style(theme::TextType::Label)
                             .size(16)
                     )
                         .width(Length::Fill)
@@ -72,7 +70,7 @@ impl Menu {
                            .size(19)
                     )
                 .on_press(Event::Menu(MenuEvent::Preview))
-                .style(ButtonType::MainButton { btype: MainType::Preview }),
+                .style(theme::ButtonType::MainButton { btype: theme::MainType::Preview }),
                 ]
                     .width(Length::Fill)
                     .spacing(5);
@@ -86,7 +84,7 @@ impl Menu {
 
         let filename = text_input("filename", &self.config.filename, |s| Event::Menu(MenuEvent::FilenameChanged(s)))
                     .width(Length::FillPortion(25))
-                    .style(TextInputType::FileName { valid: self.config.filename.is_valid_image() })
+                    .style(theme::TextInputType::FileName { valid: self.config.filename.is_valid_image() })
                     .size(16)
                     .padding(8);
 
@@ -94,14 +92,14 @@ impl Menu {
                     container(
                         button(text("SAVE").horizontal_alignment(Horizontal::Center).size(19))
                             .on_press(Event::Menu(MenuEvent::Save))
-                            .style(ButtonType::MainButton { btype: MainType::Save })
+                            .style(theme::ButtonType::MainButton { btype: theme::MainType::Save })
                     )
                         .width(Length::Fill)
                         .align_x(Horizontal::Center),
                     container(
                         button(text("RESET").horizontal_alignment(Horizontal::Center).size(19))
                             .on_press(Event::Menu(MenuEvent::Reset))
-                            .style(ButtonType::MainButton { btype: MainType::Reset })
+                            .style(theme::ButtonType::MainButton { btype: theme::MainType::Reset })
                     )
                         .width(Length::Fill)
                         .align_x(Horizontal::Center),
@@ -112,7 +110,7 @@ impl Menu {
                 .padding(10)
                 .spacing(6)
         )
-            .style(ContainerType::Bottom)
+            .style(theme::ContainerType::Bottom)
             .width(Length::FillPortion(25))
             .height(Length::FillPortion(50))
             .into()
