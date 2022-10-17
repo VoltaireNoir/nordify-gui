@@ -12,6 +12,3 @@ iced = { path = "../deps/iced", features = ["debug", "image", "svg"] }
 nordify = { path = "../nordify" }
 whatsinaname = { path = "../whatsinaname" }
 tempfile = "3.3.0"
-
-[profile.release]
-strip = true

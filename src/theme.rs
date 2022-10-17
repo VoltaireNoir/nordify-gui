@@ -7,7 +7,7 @@ use iced::{
 pub const JUST_GREY: Color = Color { r: 0.65, g: 0.65, b: 0.65, a: 1. };
 pub const D_GREY: Color = Color { r: 0.18, g: 0.203, b: 0.250, a: 1. };
 pub const LD_GREY: Color = Color { r: 0.231, g: 0.258, b: 0.321, a: 1. };
-pub const LL_GREY: Color = Color { r: 0.262, g: 0.298, b: 0.368, a: 1. };
+pub const L_GREY: Color = Color { r: 0.262, g: 0.298, b: 0.368, a: 1. };
 pub const GREY: Color = Color { r: 0.298, g: 0.337, b: 0.415, a: 1. };
 pub const WHITE: Color = Color { r: 0.925, g: 0.937, b: 0.956, a: 1. };
 pub const L_WHITE: Color = Color { r: 0.898, g: 0.913, b: 0.941, a: 1. };
@@ -100,17 +100,17 @@ impl text_input::StyleSheet for NordTheme {
             TextInputType::FileName { .. } => {
                 text_input::Appearance {
                     background: Background::Color(D_GREY),
-                    border_color: LL_GREY,
+                    border_color: L_GREY,
                     border_radius: 0.,
                     border_width: 2.,
                 }
             },
             TextInputType::BrowserBar => {
                 text_input::Appearance {
-                    background: Background::Color(LL_GREY),
+                    background: Background::Color(L_GREY),
                     border_radius: 3.5,
                     border_width: 2.,
-                    border_color: LL_GREY,
+                    border_color: L_GREY,
                 }
             }
         }
@@ -202,10 +202,10 @@ impl button::StyleSheet for NordTheme {
         match style {
             ButtonType::Content { .. } => {
                 button::Appearance {
-                    background: Some(Background::Color(LL_GREY)),
+                    background: Some(Background::Color(L_GREY)),
                     border_radius: 3.5,
                     border_width: 2.,
-                    border_color: LL_GREY,
+                    border_color: L_GREY,
                     text_color: BLUE,
                     ..Default::default()
                 }
@@ -231,10 +231,10 @@ impl scrollable::StyleSheet for NordTheme {
         let fg = { let mut c = L_WHITE; c.a = 0.8; c };
 
         scrollable::Scrollbar {
-            background: Some(Background::Color(LL_GREY)),
+            background: Some(Background::Color(L_GREY)),
             border_radius: 5.0,
             border_width: 2.,
-            border_color: LL_GREY,
+            border_color: L_GREY,
             scroller: scrollable::Scroller {
                 color: fg,
                 border_radius: 5.0,
@@ -265,19 +265,19 @@ impl pick_list::StyleSheet for NordTheme {
     fn active(&self, _style: <Self as pick_list::StyleSheet>::Style) -> pick_list::Appearance {
         pick_list::Appearance {
             text_color: LL_WHITE,
-            placeholder_color: LL_GREY,
-            background: Background::Color(GREY),
+            placeholder_color: L_GREY,
+            background: Background::Color(L_GREY),
             border_radius: 3.5,
             border_width: 2.,
-            border_color: GREY,
+            border_color: L_GREY,
             icon_size: 0.5,
         }
     }
 
     fn hovered(&self, _style: <Self as pick_list::StyleSheet>::Style) -> pick_list::Appearance {
         pick_list::Appearance {
-            background: Background::Color(LL_GREY),
-            border_color: LL_GREY,
+            background: Background::Color(LD_GREY),
+            border_color: LD_GREY,
             text_color: BLUE,
             ..self.active(())
         }
@@ -294,7 +294,7 @@ impl overlay::menu::StyleSheet for NordTheme {
             border_radius: 3.5,
             border_color: LD_GREY,
             selected_text_color: BLUE,
-            selected_background: Background::Color(LL_GREY),
+            selected_background: Background::Color(L_GREY),
         }
     }
 }

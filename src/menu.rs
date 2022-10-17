@@ -1,7 +1,7 @@
 use std::path::PathBuf;
 use iced::{
     Length,alignment::Horizontal,
-    widget::{container,row,text,button,column,text_input,pick_list}, Command,
+    widget::{container,row,text,button,column,text_input,pick_list,vertical_space, Container}, Command, Renderer,
 };
 use tempfile::TempDir;
 use whatsinaname::AboutFile;
@@ -88,6 +88,11 @@ impl Menu {
                 )
                     .width(Length::Fill);
 
+        let options: Container<Event,Renderer<theme::NordTheme>> = container(vertical_space(Length::Fill))
+            .style(theme::ContainerType::Inner)
+            .width(Length::Fill)
+            .height(Length::Fill);
+
         let filename = text_input("filename", &self.config.filename, |s| Event::Menu(MenuEvent::FilenameChanged(s)))
                     .width(Length::FillPortion(25))
                     .style(theme::TextInputType::FileName { valid: self.config.filename.is_valid_image() })
@@ -109,13 +114,14 @@ impl Menu {
                             .style(theme::ButtonType::MainButton { btype: theme::MainType::Reset })
                     )
                         .width(Length::Fill)
+                        .height(Length::Shrink)
                         .align_x(Horizontal::Center),
                 ];
 
         container(
-            column![top, modes, filename, save_reset]
+            column![top, modes, options, filename, save_reset]
                 .padding(10)
-                .spacing(6)
+                .spacing(8)
         )
             .style(theme::ContainerType::Bottom)
             .width(Length::FillPortion(25))
