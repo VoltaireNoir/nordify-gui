@@ -107,10 +107,10 @@ impl text_input::StyleSheet for NordTheme {
             },
             TextInputType::BrowserBar => {
                 text_input::Appearance {
-                    background: Background::Color(LD_GREY),
+                    background: Background::Color(LL_GREY),
                     border_radius: 3.5,
                     border_width: 2.,
-                    border_color: LD_GREY,
+                    border_color: LL_GREY,
                 }
             }
         }
@@ -266,10 +266,10 @@ impl pick_list::StyleSheet for NordTheme {
         pick_list::Appearance {
             text_color: LL_WHITE,
             placeholder_color: LL_GREY,
-            background: Background::Color(LD_GREY),
+            background: Background::Color(GREY),
             border_radius: 3.5,
             border_width: 2.,
-            border_color: LD_GREY,
+            border_color: GREY,
             icon_size: 0.5,
         }
     }

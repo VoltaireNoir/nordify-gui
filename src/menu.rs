@@ -6,7 +6,7 @@ use iced::{
 use tempfile::TempDir;
 use whatsinaname::AboutFile;
 
-use crate::{browser::Browser, theme::*};
+use crate::{browser::Browser, theme::{*, self}};
 use crate::preview::{Previews,ImageView};
 use super::Event;
 
@@ -110,7 +110,7 @@ impl Menu {
         container(
             column![top, modes, filename, save_reset]
                 .padding(10)
-                .spacing(5)
+                .spacing(6)
         )
             .style(ContainerType::Bottom)
             .width(Length::FillPortion(25))
