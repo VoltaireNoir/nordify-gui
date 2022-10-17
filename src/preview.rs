@@ -1,5 +1,7 @@
-use iced::{ContentFit,Length,Element};
-use iced::widget::{image,row};
+use iced::{ContentFit,Length};
+use iced::widget::{image,row,tooltip};
+
+use crate::theme;
 
 pub struct NordifiedImage {
     loc: String,
@@ -65,8 +67,13 @@ pub struct Previews {
 impl Previews {
     pub fn view(&self) -> crate::IcedElement {
         row!(
-            self.original.view(),
-            self.nordified.view(),
+            tooltip(self.original.view(),"Original",tooltip::Position::FollowCursor)
+                .size(14)
+                .style(theme::ContainerType::Tooltip),
+
+            tooltip(self.nordified.view(),"Nordified",tooltip::Position::FollowCursor)
+                .size(14)
+                .style(theme::ContainerType::Tooltip),
         )
             .spacing(6)
             .height(Length::FillPortion(50))

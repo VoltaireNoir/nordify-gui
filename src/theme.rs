@@ -36,6 +36,7 @@ pub enum ContainerType {
     Other,
     Bottom,
     Inner,
+    Tooltip,
 }
 
 impl container::StyleSheet for NordTheme {
@@ -59,7 +60,16 @@ impl container::StyleSheet for NordTheme {
                     ..Default::default()
                 }
             },
-            _ => container::Appearance { ..Default::default() }
+            ContainerType::Tooltip => {
+                let clr = { let mut c = D_GREY; c.a = 0.9; c };
+                container::Appearance {
+                    background: Some(Background::Color(clr)),
+                    border_color: clr,
+                    text_color: Some(YELLOW),
+                    ..Default::default()
+                }
+            }
+            _ => container::Appearance::default()
         }
     }
 }
