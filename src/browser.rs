@@ -213,11 +213,13 @@ impl Contents {
     }
 
     fn get_contents<P: AsRef<Path>>(dir: P) -> Vec<Content> {
-        let fnd: (Vec<DirEntry>, Vec<DirEntry>) = (Vec::new(), Vec::new());
         let (mut files, mut dirs) = fs::read_dir(dir)
             .unwrap()
             .filter_map(|r| if let Ok(p) = r { Some(p) } else { None })
-            .fold(fnd,|mut fnd, f| { if f.path().is_dir() { fnd.1.push(f) } else { fnd.0.push(f) }; fnd } );
+            .fold(
+                (Vec::new(), Vec::new()),
+                |mut fnd, f| { if f.path().is_dir() { fnd.1.push(f) } else { fnd.0.push(f) }; fnd }
+            );
 
         dirs.sort_by_key(|e| e.file_name());
         files.sort_by_key(|e| e.file_name());
