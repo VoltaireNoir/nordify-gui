@@ -232,9 +232,9 @@ impl Contents {
     }
 }
 
-const FOLDER_ICON_SRC: &[u8] = include_bytes!("../icons/newfolder.svg");
-const IMAGE_ICON_SRC: &[u8] = include_bytes!("../icons/image.svg");
-const FILE_ICON_SRC: &[u8] = include_bytes!("../icons/file.svg");
+static FOLDER_ICON_SRC: &[u8] = include_bytes!("../icons/newfolder.svg");
+static IMAGE_ICON_SRC: &[u8] = include_bytes!("../icons/image.svg");
+static FILE_ICON_SRC: &[u8] = include_bytes!("../icons/file.svg");
 
 struct Content {
     handle: DirEntry,
