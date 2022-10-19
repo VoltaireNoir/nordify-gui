@@ -1,7 +1,7 @@
 use std::path::PathBuf;
 use iced::{
     Length,alignment::Horizontal,
-    widget::{container,row,text,button,column,text_input,pick_list,vertical_space, Container}, Command, Renderer,
+    widget::{container,row,text,button,column,text_input,pick_list,slider, Container}, Command, Renderer,
 };
 use tempfile::TempDir;
 use whatsinaname::AboutFile;
@@ -16,6 +16,7 @@ pub enum MenuEvent {
     SelectMode(Mode),
     FilenameChanged(String),
     FocusFileName,
+    SetKVal(u8),
 }
 
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
@@ -88,7 +89,9 @@ impl Menu {
                 )
                     .width(Length::Fill);
 
-        let options: Container<Event,Renderer<theme::NordTheme>> = container(vertical_space(Length::Fill))
+        let options: Container<Event,Renderer<theme::NordTheme>> = container(
+            row![ text("K val"), text(self.config.kval), slider(1..=255,self.config.kval,|v| Event::Menu(MenuEvent::SetKVal(v))) ].spacing(8)
+        )
             .style(theme::ContainerType::Inner)
             .width(Length::Fill)
             .height(Length::Fill);
@@ -139,9 +142,13 @@ impl Menu {
                     let predictor: nordify::Predictor = match self.config.mode {
                         Mode::Default => nordify::color_predictv2,
                         Mode::Creative => nordify::color_predict,
-                        Mode::Knn => nordify::color_predictv2,
+                        Mode::Knn => nordify::knn,
                     };
-                    nordify::nordify(browser.selected.clone(), Some(loc), predictor, None);
+                    nordify::nordify(
+                        browser.selected.clone(),
+                        Some(loc),
+                        predictor,
+                        if self.config.mode == Mode::Knn { Some(self.config.kval.to_string()) } else { None } );
                 }
             },
             MenuEvent::Save => {
@@ -151,19 +158,19 @@ impl Menu {
                     let predictor: nordify::Predictor = match self.config.mode {
                         Mode::Default => nordify::color_predictv2,
                         Mode::Creative => nordify::color_predict,
-                        Mode::Knn => nordify::color_predictv2,
+                        Mode::Knn => nordify::knn,
                     };
                     nordify::nordify(
                         browser.selected.clone(),
                         Some(dbg!(loc.to_string_lossy().to_string())),
                         predictor,
-                        None
+                        if self.config.mode == Mode::Knn { Some(self.config.kval.to_string()) } else { None }
                     );
                     browser.reload_contents();
                 }
             },
             MenuEvent::Reset => {
-                self.config.mode = Default::default();
+                self.config = Default::default();
                 if !browser.selected.is_empty() {
                     let sel = PathBuf::from(&browser.selected);
                     let filename = sel.file_name().unwrap().to_string_lossy();
@@ -175,6 +182,8 @@ impl Menu {
             },
             MenuEvent::SelectMode(m) => self.config.mode = m,
 
+            MenuEvent::SetKVal(k) => self.config.kval = k,
+
             MenuEvent::FilenameChanged(s) => self.config.filename = s,
 
             MenuEvent::FocusFileName => return text_input::focus(self.filename_id.clone()),
@@ -184,8 +193,14 @@ impl Menu {
     }
 }
 
-#[derive(Default)]
 pub struct Config {
     mode: Mode,
     pub filename: String,
+    kval: u8,
+}
+
+impl Default for Config {
+    fn default() -> Self {
+        Config { mode: Default::default(), filename: Default::default(), kval: 14 }
+    }
 }

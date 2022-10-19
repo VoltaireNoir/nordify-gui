@@ -1,7 +1,7 @@
 use iced::{
     Color,Background,overlay,
     widget::{
-        container,text_input,button,scrollable,text,pick_list}
+        container,text_input,button,scrollable,text,pick_list,slider}
 };
 
 pub const JUST_GREY: Color = Color { r: 0.65, g: 0.65, b: 0.65, a: 1. };
@@ -25,7 +25,7 @@ impl iced::application::StyleSheet for NordTheme {
     fn appearance(&self, _style: Self::Style) -> iced::application::Appearance {
         iced::application::Appearance {
             background_color: BLUE,
-            text_color: D_GREY,
+            text_color: LL_WHITE,
         }
     }
 }
@@ -324,5 +324,29 @@ impl text::StyleSheet for NordTheme {
             TextType::Label => text::Appearance { color: Some(JUST_GREY) },
         }
 
+    }
+}
+
+impl slider::StyleSheet for NordTheme {
+    type Style = ();
+    fn active(&self, _style: Self::Style) -> slider::Appearance {
+
+        slider::Appearance {
+            rail_colors: (LL_WHITE, LL_WHITE),
+            handle: slider::Handle {
+                shape: slider::HandleShape::Rectangle { width: 3, border_radius: 0. },
+                color: BLUE,
+                border_color: BLUE,
+                border_width: 0.
+            }
+        }
+    }
+
+    fn dragging(&self, _style: Self::Style) -> slider::Appearance {
+        self.active(())
+    }
+
+    fn hovered(&self, _style: Self::Style) -> slider::Appearance {
+        self.active(())
     }
 }
