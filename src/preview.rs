@@ -6,6 +6,7 @@ use crate::theme;
 static NORD_SRC: &[u8] = include_bytes!("../media/preview2.png");
 static ORIG_SRC: &[u8] = include_bytes!("../media/preview1.png");
 
+#[derive(Default)]
 pub struct NordifiedImage {
     loc: String,
 }
@@ -25,12 +26,7 @@ impl ImageView for NordifiedImage {
     }
 }
 
-impl Default for NordifiedImage {
-    fn default() -> Self {
-        NordifiedImage { loc: String::new() }
-    }
-}
-
+#[derive(Default)]
 pub struct OriginalImage {
     loc: String,
 }
@@ -47,12 +43,6 @@ impl ImageView for OriginalImage {
     fn set_loc(&mut self, new: &str) {
         self.loc.clear();
         self.loc.push_str(new);
-    }
-}
-
-impl Default for OriginalImage {
-    fn default() -> Self {
-        OriginalImage { loc: String::new() }
     }
 }
 
