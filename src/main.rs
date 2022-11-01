@@ -1,22 +1,22 @@
-use iced::{Length,Settings,Element,Application,executor,Event as KeyEvent, Command};
-use iced::widget::{column,row};
+use iced::event::Status;
 use iced::keyboard::{self, KeyCode, Modifiers};
+use iced::widget::{column, row};
+use iced::{executor, Application, Command, Element, Event as KeyEvent, Length, Settings};
 
-mod menu;
 mod browser;
+mod menu;
 mod preview;
 mod theme;
 
-use browser::{Browser,BrowserEvent};
-use menu::{Menu,MenuEvent};
+use browser::{Browser, BrowserEvent};
+use menu::{Menu, MenuEvent};
 use preview::Previews;
 use theme::*;
 
 pub type IcedElement<'a> = Element<'a, Event, iced::Renderer<NordTheme>>;
 
 fn main() {
-    NordifyGUI::run(Settings::default())
-        .expect("Failed to run Nordify GUI")
+    NordifyGUI::run(Settings::default()).expect("Failed to run Nordify GUI")
 }
 
 #[derive(Default)]
@@ -50,35 +50,39 @@ impl Application for NordifyGUI {
 
     fn update(&mut self, message: Self::Message) -> iced::Command<Self::Message> {
         match message {
-            Event::Browser(event) => self.browser.update(&mut self.previews, &mut self.menu, event),
-            Event::Menu(event) => self.menu.update(&mut self.previews, &mut self.browser, event),
-            Event::Quit => { self.exit = true; Command::none() },
+            Event::Browser(event) => self
+                .browser
+                .update(&mut self.previews, &mut self.menu, event),
+            Event::Menu(event) => self
+                .menu
+                .update(&mut self.previews, &mut self.browser, event),
+            Event::Quit => {
+                self.exit = true;
+                Command::none()
+            }
         }
     }
 
     fn view(&self) -> IcedElement {
         let spacing = 6;
         column![
-                self.previews.view(),
-            row!(
-                self.browser.view(),
-                self.menu.view(),
-            )
+            self.previews.view(),
+            row!(self.browser.view(), self.menu.view(),)
                 .spacing(spacing)
                 .height(Length::FillPortion(50))
-            ]
-            .spacing(spacing)
-            .padding(spacing)
-            .into()
+        ]
+        .spacing(spacing)
+        .padding(spacing)
+        .into()
     }
 
     fn subscription(&self) -> iced::Subscription<Self::Message> {
-        iced::subscription::events_with(|e,_| {
-            match e {
-                KeyEvent::Keyboard(keyboard::Event::KeyPressed { key_code, modifiers })
-                    => keyboard_event_handler(key_code, modifiers),
-                _ => None
-            }
+        iced::subscription::events_with(|e, s| match e {
+            KeyEvent::Keyboard(keyboard::Event::KeyPressed {
+                key_code,
+                modifiers,
+            }) => keyboard_event_handler(key_code, modifiers, s),
+            _ => None,
         })
     }
 
@@ -91,35 +95,43 @@ impl Application for NordifyGUI {
     }
 }
 
-fn keyboard_event_handler(key: KeyCode, modifier: Modifiers) -> Option<Event> {
-    match modifier {
-        Modifiers::CTRL => {
-            use menu::MenuEvent::{Preview,Reset,Save};
-            use BrowserEvent::DelSelected;
+fn keyboard_event_handler(key: KeyCode, modifier: Modifiers, status: Status) -> Option<Event> {
+    let basic = || {
+        use menu::MenuEvent::{Preview, Reset, Save};
+        use BrowserEvent::DelSelected;
+        match key {
+            KeyCode::P => Some(Event::Menu(Preview)),
+            KeyCode::R => Some(Event::Menu(Reset)),
+            KeyCode::S => Some(Event::Menu(Save)),
+            KeyCode::Delete => Some(Event::Browser(DelSelected)),
+            KeyCode::Q => Some(Event::Quit),
+            KeyCode::L => Some(Event::Browser(BrowserEvent::FocusAddrBar)),
+            KeyCode::F => Some(Event::Menu(MenuEvent::FocusFileName)),
+            KeyCode::Backspace => Some(Event::Browser(BrowserEvent::DirUp)),
+            _ => None,
+        }
+    };
 
-            match key {
-                KeyCode::P => Some(Event::Menu(Preview)),
-                KeyCode::R => Some(Event::Menu(Reset)),
-                KeyCode::S => Some(Event::Menu(Save)),
-                KeyCode::Delete => Some(Event::Browser(DelSelected)),
-                KeyCode::Q => Some(Event::Quit),
-                KeyCode::L => Some(Event::Browser(BrowserEvent::FocusAddrBar)),
-                KeyCode::F => Some(Event::Menu(MenuEvent::FocusFileName)),
-                _ => None,
-            }
-        },
+    let mode = || {
+        use menu::{MenuEvent::SelectMode, Mode::*};
 
-        Modifiers::ALT => {
-            use menu::{MenuEvent::SelectMode,Mode::*};
+        match key {
+            KeyCode::Key1 => Some(Event::Menu(SelectMode(Default))),
+            KeyCode::Key2 => Some(Event::Menu(SelectMode(Creative))),
+            KeyCode::Key3 => Some(Event::Menu(SelectMode(Knn))),
+            _ => None,
+        }
+    };
 
-            match key {
-                KeyCode::Key1 => Some(Event::Menu(SelectMode(Default))),
-                KeyCode::Key2 => Some(Event::Menu(SelectMode(Creative))),
-                KeyCode::Key3 => Some(Event::Menu(SelectMode(Knn))),
-                _ => None,
-            }
-        },
+    if modifier.is_empty() && status == Status::Ignored {
+        basic().or_else(mode)
+    } else {
+        match modifier {
+            Modifiers::CTRL => basic(),
 
-        _ => None,
+            Modifiers::ALT => mode(),
+
+            _ => None,
+        }
     }
 }
