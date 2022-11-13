@@ -13,10 +13,12 @@ use menu::{Menu, MenuEvent};
 use preview::Previews;
 use theme::*;
 
+pub static EXT: [&str; 5] = ["jpg", "jpeg", "png", "bmp", "svg"];
+
 pub type IcedElement<'a> = Element<'a, Event, iced::Renderer<NordTheme>>;
 
-fn main() {
-    NordifyGUI::run(Settings::default()).expect("Failed to run Nordify GUI")
+fn main() -> iced::Result {
+    NordifyGUI::run(Settings::default())
 }
 
 #[derive(Default)]

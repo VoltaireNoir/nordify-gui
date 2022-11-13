@@ -1,12 +1,17 @@
-use std::path::PathBuf;
 use iced::{
-    Length,alignment::Horizontal,
-    widget::{container,row,text,button,column,text_input,pick_list,slider, Container}, Command, Renderer,
+    alignment::Horizontal,
+    widget::{button, column, container, pick_list, row, slider, text, text_input},
+    Command, Length,
 };
+use std::path::PathBuf;
 use tempfile::TempDir;
 use whatsinaname::AboutFile;
 
-use crate:: { browser::Browser, preview::{Previews,ImageView}, theme, Event };
+use crate::{
+    browser::Browser,
+    preview::{ImageView, Previews},
+    theme, Event,
+};
 
 #[derive(Clone, Debug)]
 pub enum MenuEvent {
@@ -16,7 +21,13 @@ pub enum MenuEvent {
     SelectMode(Mode),
     FilenameChanged(String),
     FocusFileName,
-    SetKVal(u8),
+    SetKVal(UType),
+}
+
+#[derive(Clone, Debug)]
+pub enum UType {
+    Text(String),
+    Num(u8),
 }
 
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
@@ -28,7 +39,7 @@ pub enum Mode {
 }
 
 impl Mode {
-    const ALL: [Mode;3] = [Self::Default,Self::Creative,Self::Knn];
+    const ALL: [Mode; 3] = [Self::Default, Self::Creative, Self::Knn];
 }
 
 impl std::fmt::Display for Mode {
@@ -50,89 +61,104 @@ pub struct Menu {
 
 impl Default for Menu {
     fn default() -> Self {
-       Menu {
-           temp: tempfile::tempdir().unwrap(),
-           config: Default::default(),
-           filename_id: text_input::Id::unique(),
-       }
+        Menu {
+            temp: tempfile::tempdir().unwrap(),
+            config: Default::default(),
+            filename_id: text_input::Id::unique(),
+        }
     }
 }
 
 impl Menu {
     pub fn view(&self) -> crate::IcedElement {
         let top = row![
-                    container(
-                        text("MODES")
-                            .vertical_alignment(iced::alignment::Vertical::Top)
-                            .horizontal_alignment(Horizontal::Left)
-                            .style(theme::TextType::Label)
-                            .size(16)
-                    )
-                        .width(Length::Fill)
-                        .padding(3),
-                    button(text("PREVIEW")
-                           .vertical_alignment(iced::alignment::Vertical::Top)
-                           .horizontal_alignment(Horizontal::Right)
-                           .width(Length::Fill)
-                           .size(19)
-                    )
-                .on_press(Event::Menu(MenuEvent::Preview))
-                .style(theme::ButtonType::MainButton { btype: theme::MainType::Preview }),
-                ]
-                    .width(Length::Fill)
-                    .spacing(5);
-
-        let modes = pick_list(
-                    Mode::ALL.to_vec(),
-                    Some(self.config.mode),
-                    |m| Event::Menu(MenuEvent::SelectMode(m))
-                )
-                    .width(Length::Fill);
-
-        let options: Container<Event,Renderer<theme::NordTheme>> = container(
-            row![ text("K val"), text(self.config.kval), slider(1..=255,self.config.kval,|v| Event::Menu(MenuEvent::SetKVal(v))) ].spacing(8)
-        )
-            .style(theme::ContainerType::Inner)
-            .width(Length::Fill)
-            .height(Length::Fill);
-
-        let filename = text_input("filename", &self.config.filename, |s| Event::Menu(MenuEvent::FilenameChanged(s)))
-                    .width(Length::FillPortion(25))
-                    .style(theme::TextInputType::FileName { valid: self.config.filename.is_valid_image() })
-                    .id(self.filename_id.clone())
+            container(
+                text("MODES")
+                    .vertical_alignment(iced::alignment::Vertical::Top)
+                    .horizontal_alignment(Horizontal::Left)
+                    .style(theme::TextType::Label)
                     .size(16)
-                    .padding(8);
+            )
+            .width(Length::Fill)
+            .padding(3),
+            button(
+                text("PREVIEW")
+                    .vertical_alignment(iced::alignment::Vertical::Top)
+                    .horizontal_alignment(Horizontal::Right)
+                    .width(Length::Fill)
+                    .size(19)
+            )
+            .on_press(Event::Menu(MenuEvent::Preview))
+            .style(theme::ButtonType::MainButton {
+                btype: theme::MainType::Preview
+            }),
+        ]
+        .width(Length::Fill)
+        .spacing(5);
+
+        let modes = pick_list(Mode::ALL.to_vec(), Some(self.config.mode), |m| {
+            Event::Menu(MenuEvent::SelectMode(m))
+        })
+        .width(Length::Fill);
+
+        let filename = text_input("filename", &self.config.filename, |s| {
+            Event::Menu(MenuEvent::FilenameChanged(s))
+        })
+        .width(Length::FillPortion(25))
+        .style(theme::TextInputType::FileName {
+            valid: self.config.filename.is_valid_file_with_ext(&crate::EXT),
+        })
+        .id(self.filename_id.clone())
+        .size(16)
+        .padding(8);
 
         let save_reset = row![
-                    container(
-                        button(text("SAVE").horizontal_alignment(Horizontal::Center).size(19))
-                            .on_press(Event::Menu(MenuEvent::Save))
-                            .style(theme::ButtonType::MainButton { btype: theme::MainType::Save })
-                    )
-                        .width(Length::Fill)
-                        .align_x(Horizontal::Center),
-                    container(
-                        button(text("RESET").horizontal_alignment(Horizontal::Center).size(19))
-                            .on_press(Event::Menu(MenuEvent::Reset))
-                            .style(theme::ButtonType::MainButton { btype: theme::MainType::Reset })
-                    )
-                        .width(Length::Fill)
-                        .height(Length::Shrink)
-                        .align_x(Horizontal::Center),
-                ];
+            container(
+                button(
+                    text("SAVE")
+                        .horizontal_alignment(Horizontal::Center)
+                        .size(19)
+                )
+                .on_press(Event::Menu(MenuEvent::Save))
+                .style(theme::ButtonType::MainButton {
+                    btype: theme::MainType::Save
+                })
+            )
+            .width(Length::Fill)
+            .align_x(Horizontal::Center),
+            container(
+                button(
+                    text("RESET")
+                        .horizontal_alignment(Horizontal::Center)
+                        .size(19)
+                )
+                .on_press(Event::Menu(MenuEvent::Reset))
+                .style(theme::ButtonType::MainButton {
+                    btype: theme::MainType::Reset
+                })
+            )
+            .width(Length::Fill)
+            .height(Length::Shrink)
+            .align_x(Horizontal::Center),
+        ];
 
         container(
-            column![top, modes, options, filename, save_reset]
+            column![top, modes, self.options(), filename, save_reset]
                 .padding(10)
-                .spacing(8)
+                .spacing(8),
         )
-            .style(theme::ContainerType::Bottom)
-            .width(Length::FillPortion(25))
-            .height(Length::FillPortion(50))
-            .into()
+        .style(theme::ContainerType::Bottom)
+        .width(Length::FillPortion(25))
+        .height(Length::FillPortion(50))
+        .into()
     }
 
-    pub fn update(&mut self, previews: &mut Previews, browser: &mut Browser, event: MenuEvent) -> Command<Event> {
+    pub fn update(
+        &mut self,
+        previews: &mut Previews,
+        browser: &mut Browser,
+        event: MenuEvent,
+    ) -> Command<Event> {
         match event {
             MenuEvent::Preview => {
                 if !browser.selected.is_empty() {
@@ -148,11 +174,18 @@ impl Menu {
                         browser.selected.clone(),
                         Some(loc),
                         predictor,
-                        if self.config.mode == Mode::Knn { Some(self.config.kval.to_string()) } else { None } );
+                        if self.config.mode == Mode::Knn {
+                            Some(self.config.kval.to_string())
+                        } else {
+                            None
+                        },
+                    );
                 }
-            },
+            }
             MenuEvent::Save => {
-                if !browser.selected.is_empty() && self.config.filename.is_valid_image() {
+                if !browser.selected.is_empty()
+                    && self.config.filename.is_valid_file_with_ext(&crate::EXT)
+                {
                     let mut loc = browser.addrbar.addr.clone();
                     loc.push(&self.config.filename);
                     let predictor: nordify::Predictor = match self.config.mode {
@@ -162,27 +195,36 @@ impl Menu {
                     };
                     nordify::nordify(
                         browser.selected.clone(),
-                        Some(dbg!(loc.to_string_lossy().to_string())),
+                        Some(loc.to_string_lossy().to_string()),
                         predictor,
-                        if self.config.mode == Mode::Knn { Some(self.config.kval.to_string()) } else { None }
+                        if self.config.mode == Mode::Knn {
+                            Some(self.config.kval.to_string())
+                        } else {
+                            None
+                        },
                     );
                     browser.reload_contents();
                 }
-            },
+            }
             MenuEvent::Reset => {
                 self.config = Default::default();
                 if !browser.selected.is_empty() {
                     let sel = PathBuf::from(&browser.selected);
                     let filename = sel.file_name().unwrap().to_string_lossy();
-                    let (name, _) = filename.split_at(
-                        filename.rfind('.').unwrap()
-                    );
+                    let (name, _) = filename.split_at(filename.rfind('.').unwrap());
                     self.config.filename = format!("{name}_nordified.png");
                 }
-            },
+            }
             MenuEvent::SelectMode(m) => self.config.mode = m,
 
-            MenuEvent::SetKVal(k) => self.config.kval = k,
+            MenuEvent::SetKVal(update) => match update {
+                UType::Num(n) => self.config.kval = n,
+                UType::Text(t) => {
+                    if let Ok(n) = t.parse::<u8>() {
+                        self.config.kval = n;
+                    }
+                }
+            },
 
             MenuEvent::FilenameChanged(s) => self.config.filename = s,
 
@@ -190,6 +232,48 @@ impl Menu {
         }
 
         Command::none()
+    }
+
+    fn options(&self) -> crate::IcedElement {
+        if self.config.mode == Mode::Knn {
+            container(
+                container(
+                    row![
+                        container(text("K").style(theme::TextType::Option).size(20))
+                            .padding(2)
+                            .style(theme::ContainerType::Options),
+                        text_input("val", &self.config.kval.to_string(), |s| Event::Menu(
+                            MenuEvent::SetKVal(UType::Text(s))
+                        ))
+                        .width(Length::Units(30))
+                        .style(theme::TextInputType::BrowserBar),
+                        slider(1..=255, self.config.kval, |v| Event::Menu(
+                            MenuEvent::SetKVal(UType::Num(v))
+                        ))
+                    ]
+                    .spacing(10)
+                    .padding(10),
+                )
+                .center_y(),
+            )
+            .style(theme::ContainerType::Inner)
+            .width(Length::Fill)
+            .height(Length::Fill)
+            .into()
+        } else {
+            container(
+                text("No additional options \navailable for the \nselected mode")
+                    .size(14)
+                    .horizontal_alignment(Horizontal::Center)
+                    .vertical_alignment(iced::alignment::Vertical::Center),
+            )
+            .style(theme::ContainerType::Inner)
+            .center_x()
+            .center_y()
+            .width(Length::Fill)
+            .height(Length::Fill)
+            .into()
+        }
     }
 }
 
@@ -201,6 +285,10 @@ pub struct Config {
 
 impl Default for Config {
     fn default() -> Self {
-        Config { mode: Default::default(), filename: Default::default(), kval: 14 }
+        Config {
+            mode: Default::default(),
+            filename: Default::default(),
+            kval: 32,
+        }
     }
 }

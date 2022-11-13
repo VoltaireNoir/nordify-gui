@@ -1,6 +1,6 @@
 use iced::{
-    Length,  Command,
-    widget::{svg, Column, button, column, container, row, scrollable, text, text_input}, Renderer,
+    widget::{button, column, container, row, scrollable, svg, text, text_input, Column},
+    Command, Length, Renderer,
 };
 use std::{
     fs::{self, DirEntry},
@@ -8,9 +8,12 @@ use std::{
 };
 use whatsinaname::AboutFile;
 
-use crate::{menu::Menu, theme::{NordTheme, self}};
 use crate::preview::{ImageView, Previews};
 use crate::Event;
+use crate::{
+    menu::Menu,
+    theme::{self, NordTheme},
+};
 
 #[derive(Default)]
 pub struct Browser {
@@ -40,13 +43,12 @@ impl Browser {
                     .style(theme::TextType::Label)
                     .height(Length::Fill),
             )
-                .padding(3)
-                .align_y(iced::alignment::Vertical::Center),
-
+            .padding(3)
+            .align_y(iced::alignment::Vertical::Center),
             self.addrbar.view(),
         ]
-            .spacing(12)
-            .width(Length::FillPortion(75));
+        .spacing(12)
+        .width(Length::FillPortion(75));
 
         container(
             column![top_bar, self.contents.view()]
@@ -60,7 +62,12 @@ impl Browser {
         .into()
     }
 
-    pub fn update(&mut self, previews: &mut Previews, menu: &mut Menu, message: BrowserEvent) -> Command<Event> {
+    pub fn update(
+        &mut self,
+        previews: &mut Previews,
+        menu: &mut Menu,
+        message: BrowserEvent,
+    ) -> Command<Event> {
         match message {
             BrowserEvent::AddrChanged(v) => self.addrbar.value = v,
 
@@ -69,7 +76,7 @@ impl Browser {
                     self.addrbar.addr.clear();
                     self.addrbar.addr.push(&self.addrbar.value);
                     self.contents.entries = Contents::get_contents(&self.addrbar.addr);
-                    return self.contents.reset_scroll()
+                    return self.contents.reset_scroll();
                 }
             }
             BrowserEvent::ContentClicked(id) => {
@@ -81,7 +88,7 @@ impl Browser {
                         self.addrbar.addr.clear();
                         self.addrbar.addr.push(&dir);
                         self.addrbar.value = dir;
-                        return self.contents.reset_scroll()
+                        return self.contents.reset_scroll();
                     }
                     ContentType::Image => {
                         self.contents.clear_selection();
@@ -92,7 +99,7 @@ impl Browser {
                         self.selected.clear();
                         self.selected.push_str(&path);
                         let filename = entry.handle.file_name().to_string_lossy().to_string();
-                        menu.config.filename = format!("{}_nordified.png",filename.get_name());
+                        menu.config.filename = format!("{}_nordified.png", filename.get_name());
                     }
                     _ => (),
                 }
@@ -102,20 +109,18 @@ impl Browser {
                     self.addrbar.value = String::from(self.addrbar.addr.to_string_lossy());
                     self.contents.entries = Contents::get_contents(&self.addrbar.addr);
                 }
-            },
+            }
 
             BrowserEvent::DelSelected => {
-                if self.selected.is_image() {
+                if self.selected.has_extension(&crate::EXT) {
                     fs::remove_file(&self.selected).expect("Failed to delete selected file");
                     self.selected.clear();
                     menu.config.filename.clear();
                     self.reload_contents();
                 }
-            },
-
-            BrowserEvent::FocusAddrBar => {
-                return text_input::focus(self.addrbar.id.clone())
             }
+
+            BrowserEvent::FocusAddrBar => return text_input::focus(self.addrbar.id.clone()),
         }
 
         Command::none()
@@ -177,22 +182,21 @@ impl Default for Contents {
 
 impl Contents {
     fn view(&self) -> crate::IcedElement {
-        let col: Column<'_, Event, Renderer<NordTheme>> = column![
-                button(text(" ..").size(18))
-                    .on_press(Event::Browser(BrowserEvent::DirUp))
-                    .width(Length::FillPortion(75))
-                    .style(theme::ButtonType::Content { selected: false })
-                    .padding(4)
-        ]
-            .spacing(10)
-            .width(Length::FillPortion(75));
+        let col: Column<'_, Event, Renderer<NordTheme>> = column![button(text(" ..").size(18))
+            .on_press(Event::Browser(BrowserEvent::DirUp))
+            .width(Length::FillPortion(75))
+            .style(theme::ButtonType::Content { selected: false })
+            .padding(4)]
+        .spacing(10)
+        .width(Length::FillPortion(75));
 
         container(
             scrollable(
-                container(self.entries.iter().fold(col, |c, f| c.push(f.view()))).padding(20)
-                    .style(theme::ContainerType::Inner)
+                container(self.entries.iter().fold(col, |c, f| c.push(f.view())))
+                    .padding(20)
+                    .style(theme::ContainerType::Inner),
             )
-                .id(self.scroll_id.clone())
+            .id(self.scroll_id.clone()),
         )
         .style(theme::ContainerType::Inner)
         .padding(4)
@@ -203,9 +207,7 @@ impl Contents {
     }
 
     fn clear_selection(&mut self) {
-        self.entries
-            .iter_mut()
-            .for_each(|e| e.selected = false);
+        self.entries.iter_mut().for_each(|e| e.selected = false);
     }
 
     fn reset_scroll(&self) -> Command<Event> {
@@ -216,27 +218,30 @@ impl Contents {
         let (mut files, mut dirs) = fs::read_dir(dir)
             .unwrap()
             .filter_map(|r| if let Ok(p) = r { Some(p) } else { None })
-            .fold(
-                (Vec::new(), Vec::new()),
-                |mut fnd, f| { if f.path().is_dir() { fnd.1.push(f) } else { fnd.0.push(f) }; fnd }
-            );
+            .fold((Vec::new(), Vec::new()), |mut fnd, f| {
+                if f.path().is_dir() {
+                    fnd.1.push(f)
+                } else {
+                    fnd.0.push(f)
+                };
+                fnd
+            });
 
         dirs.sort_by_key(|e| e.file_name());
         files.sort_by_key(|e| e.file_name());
 
-        dirs
-            .into_iter()
+        dirs.into_iter()
             .chain(files.into_iter())
             .filter(|e| !e.file_name().to_string_lossy().starts_with('.'))
             .enumerate()
-            .map(|(i,e)| Content::new(e,i))
+            .map(|(i, e)| Content::new(e, i))
             .collect()
     }
 }
 
-static FOLDER_ICON_SRC: &[u8] = include_bytes!("../icons/newfolder.svg");
-static IMAGE_ICON_SRC: &[u8] = include_bytes!("../icons/image.svg");
-static FILE_ICON_SRC: &[u8] = include_bytes!("../icons/file.svg");
+static FOLDER_ICON_SRC: &[u8] = include_bytes!("../media/newfolder.svg");
+static IMAGE_ICON_SRC: &[u8] = include_bytes!("../media/image.svg");
+static FILE_ICON_SRC: &[u8] = include_bytes!("../media/file.svg");
 
 struct Content {
     handle: DirEntry,
@@ -254,7 +259,11 @@ impl Content {
                 id,
                 selected: false,
             }
-        } else if file.file_name().to_string_lossy().is_image() {
+        } else if file
+            .file_name()
+            .to_string_lossy()
+            .has_extension(&crate::EXT)
+        {
             Content {
                 handle: file,
                 ctype: ContentType::Image,
@@ -287,15 +296,17 @@ impl Content {
                 svg::Svg::new(svg::Handle::from_memory(*src))
                     .content_fit(iced::ContentFit::Contain)
                     .width(Length::Units(22))
-                    .height(Length::Units(20))
+                    .height(Length::Units(20)),
             )
-                .padding(2)
-                .center_x()
-                .center_y()
+            .padding(2)
+            .center_x()
+            .center_y()
         };
         let button = match self.ctype {
             Directory | ContentType::Image => button(btcontent)
-                .style(theme::ButtonType::Content { selected: self.selected })
+                .style(theme::ButtonType::Content {
+                    selected: self.selected,
+                })
                 .on_press(Event::Browser(BrowserEvent::ContentClicked(self.id)))
                 .width(Length::Fill),
             Generic => button(btcontent)
@@ -303,8 +314,7 @@ impl Content {
                 .width(Length::Fill),
         };
 
-        container(row![icon,button].spacing(6))
-            .center_y()
+        container(row![icon, button].spacing(6)).center_y()
     }
 }
 
