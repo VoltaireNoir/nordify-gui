@@ -8,7 +8,7 @@ edition = "2021"
 [dependencies]
 dirs = "4.0.0"
 fastrand = "1.8.0"
-iced = { path = "../deps/iced", features = ["image", "svg"] }
 nordify = { path = "../nordify" }
 whatsinaname = { path = "../whatsinaname" }
 tempfile = "3.3.0"
+iced = { version = "0.5.2", features = ["image", "svg"] }
