@@ -3,7 +3,8 @@ use iced::{
     widget::{button, column, container, pick_list, row, slider, text, text_input},
     Command, Length,
 };
-use std::path::PathBuf;
+use mapped::{mappers, Mapper, ProcOptions};
+use std::path::{Path, PathBuf};
 use tempfile::TempDir;
 use whatsinaname::AboutFile;
 
@@ -164,45 +165,39 @@ impl Menu {
                 if !browser.selected.is_empty() {
                     let r: String = (0..3).map(|_| fastrand::alphanumeric()).collect();
                     let loc = format!("{}/nordified{r}.png", self.temp.path().display());
+                    let (file, out): (&Path, &Path) = (browser.selected.as_ref(), loc.as_ref());
                     previews.nordified.set_loc(&loc);
-                    let predictor: nordify::Predictor = match self.config.mode {
-                        Mode::Default => nordify::color_predictv2,
-                        Mode::Creative => nordify::color_predict,
-                        Mode::Knn => nordify::knn,
-                    };
-                    nordify::nordify(
-                        browser.selected.clone(),
-                        Some(loc),
-                        predictor,
-                        if self.config.mode == Mode::Knn {
-                            Some(self.config.kval.to_string())
-                        } else {
-                            None
-                        },
-                    );
+                    match self.config.mode {
+                        Mode::Default => nordify(ProcOptions::default(), file, out),
+                        Mode::Creative => nordify(ProcOptions::new(mappers::Creative), file, out),
+                        Mode::Knn => nordify(
+                            ProcOptions::new(
+                                mappers::Knn::with(self.config.kval as usize).memoized(),
+                            ),
+                            file,
+                            out,
+                        ),
+                    }
                 }
             }
             MenuEvent::Save => {
                 if !browser.selected.is_empty()
                     && self.config.filename.is_valid_file_with_ext(&crate::EXT)
                 {
-                    let mut loc = browser.addrbar.addr.clone();
+                    let mut loc = browser.addrbar.addr.to_path_buf();
                     loc.push(&self.config.filename);
-                    let predictor: nordify::Predictor = match self.config.mode {
-                        Mode::Default => nordify::color_predictv2,
-                        Mode::Creative => nordify::color_predict,
-                        Mode::Knn => nordify::knn,
+                    let (file, out): (&Path, &Path) = (browser.selected.as_ref(), loc.as_path());
+                    match self.config.mode {
+                        Mode::Default => nordify(ProcOptions::default(), file, out),
+                        Mode::Creative => nordify(ProcOptions::new(mappers::Creative), file, out),
+                        Mode::Knn => nordify(
+                            ProcOptions::new(
+                                mappers::Knn::with(self.config.kval as usize).memoized(),
+                            ),
+                            file,
+                            out,
+                        ),
                     };
-                    nordify::nordify(
-                        browser.selected.clone(),
-                        Some(loc.to_string_lossy().to_string()),
-                        predictor,
-                        if self.config.mode == Mode::Knn {
-                            Some(self.config.kval.to_string())
-                        } else {
-                            None
-                        },
-                    );
                     browser.reload_contents();
                 }
             }
@@ -291,4 +286,12 @@ impl Default for Config {
             kval: 32,
         }
     }
+}
+
+fn nordify<M: Mapper>(opts: ProcOptions<M>, file: &Path, out: &Path) {
+    opts.load(file)
+        .expect("failed to load file")
+        .process()
+        .save(out)
+        .expect("failed to save")
 }

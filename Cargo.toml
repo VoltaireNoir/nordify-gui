@@ -1,5 +1,5 @@
 [package]
-name = "nordifygui"
+name = "nordify-gui"
 version = "0.1.0"
 edition = "2021"
 
@@ -8,7 +8,7 @@ edition = "2021"
 [dependencies]
 dirs = "4.0.0"
 fastrand = "1.8.0"
-nordify = { path = "../nordify" }
-whatsinaname = { path = "../whatsinaname" }
+mapped = { git = "https://github.com/voltaireNoir/mapped" }
+whatsinaname = { git = "https://github.com/VoltaireNoir/whatsinaname" }
 tempfile = "3.3.0"
-iced = { version = "0.5.2", features = ["image", "svg"] }
+iced = { version = "0.5.2", features = ["image", "svg" ] }
